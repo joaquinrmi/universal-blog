@@ -3,12 +3,12 @@ import * as path from "path";
 import * as express from "express";
 import * as session from "express-session";
 import * as cookieParser from "cookie-parser";
-import * as pg from "pg";
+import Model from "../model";
 
 class UniversalBlog
 {
    app = express();
-   pool = new pg.Pool();
+   model: Model;
 
    constructor()
    {
@@ -21,6 +21,8 @@ class UniversalBlog
          console.error(err);
          return;
       }
+
+      this.model = new Model();
 
       this.app.set("port", process.env.PORT);
 
