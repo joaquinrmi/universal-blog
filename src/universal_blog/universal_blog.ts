@@ -1,10 +1,14 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as express from "express";
+import * as session from "express-session";
+import * as cookieParser from "cookie-parser";
+import * as pg from "pg";
 
 class UniversalBlog
 {
    app = express();
+   pool = new pg.Pool();
 
    constructor()
    {
@@ -19,6 +23,15 @@ class UniversalBlog
       }
 
       this.app.set("port", process.env.PORT);
+
+      this.app.use(express.json());
+      this.app.use(express.urlencoded({ extended: false }));
+      this.app.use(cookieParser());
+      this.app.use(session({
+         secret: process.env.SESSION_SECRET,
+         resave: false,
+         saveUninitialized: false
+      }));
    }
 
    start()
