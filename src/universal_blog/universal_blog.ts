@@ -5,10 +5,13 @@ import * as session from "express-session";
 import * as cookieParser from "cookie-parser";
 import Model from "../model";
 
+import AccountAPI from "../api/account";
+
 class UniversalBlog
 {
    app = express();
    model: Model;
+   accountAPI: AccountAPI;
 
    constructor()
    {
@@ -24,6 +27,8 @@ class UniversalBlog
 
       this.model = new Model();
 
+      this.accountAPI = new AccountAPI(this.model);
+
       this.app.set("port", process.env.PORT);
 
       this.app.use(express.json());
@@ -34,6 +39,8 @@ class UniversalBlog
          resave: false,
          saveUninitialized: false
       }));
+
+      this.app.use("/api/account", this.accountAPI.use());
    }
 
    start()

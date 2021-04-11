@@ -1,10 +1,13 @@
 enum AccountError
 {
+   InternalError = "internal_error",
    InvalidForm = "invalid_form",
    InvalidPassword = "invalid_password",
    TooLongName = "too_long_name",
    TooLongSurname = "too_long_surname",
-   InvalidAlias = "invalid_alias"
+   InvalidAlias = "invalid_alias",
+   AliasIsAlreadyUsed = "alias_is_already_used",
+   EmailIsAlreadyUsed = "email_is_already_used",
 }
 
 export default AccountError;
