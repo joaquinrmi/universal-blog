@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import { encrypt, decrypt } from "../encryption";
 import Skeleton from "./skeleton";
 import BasicModel from "./basic_model";
+import randomWord from "../random_word";
 
 export interface User
 {
@@ -11,17 +12,21 @@ export interface User
    alias: string;
    email: string;
    rank: number;
-   dateJoin: Date;
+   date_join: Date;
 }
 
 export interface UserSchema extends User
 {
    id: number;
+   session_keys: Array<string>;
 }
 
 export interface UserDocument extends UserSchema
 {
+   pool: Pool;
+
    checkPassword(password: string): boolean;
+   registerSession(): Promise<string>;
 }
 
 const userSkeleton = new Skeleton<UserDocument>();
@@ -29,10 +34,11 @@ const userSkeleton = new Skeleton<UserDocument>();
 class UserModel extends BasicModel<UserDocument>
 {
    pool: Pool;
+   private props = [ "id", "password", "name", "surname", "alias", "email", "rank", "date_join", "session_keys" ];
 
    constructor(pool: Pool)
    {
-      super(userSkeleton);
+      super(pool, userSkeleton);
 
       this.pool = pool;
    }
@@ -41,7 +47,7 @@ class UserModel extends BasicModel<UserDocument>
    {
       if(!props)
       {
-         props = [ "id", "password", "name", "surname", "alias", "email", "rank", "date_join" ];
+         props = this.props;
       }
 
       const query = `SELECT ${props.join(",")} FROM users WHERE alias=$1 OR email=$1`;
@@ -89,7 +95,7 @@ class UserModel extends BasicModel<UserDocument>
    async createUser(user: User): Promise<void>
    {
       let encryptedPassword = encrypt(user.password);
-      let date = `${user.dateJoin.getFullYear()}-${user.dateJoin.getMonth() + 1}-${user.dateJoin.getDate()}`;
+      let date = `${user.date_join.getFullYear()}-${user.date_join.getMonth() + 1}-${user.date_join.getDate()}`;
 
       try
       {
@@ -106,6 +112,39 @@ userSkeleton.methods.checkPassword = function(this: UserDocument, password: stri
 {
    if(!this.password) return false;
    return password == decrypt(this.password);
+}
+
+userSkeleton.methods.registerSession = async function(this: UserDocument): Promise<string>
+{
+   if(!this.session_keys)
+   {
+      return Promise.reject(new Error("field 'session_keys' is undefined"));
+   }
+
+   if(!this.id)
+   {
+      return Promise.reject(new Error("field 'id' is undefined"));
+   }
+
+   const key = randomWord(8);
+
+   if(this.session_keys.length == 10)
+   {
+      this.session_keys.splice(0, 1);
+      this.session_keys.push(key);
+   }
+   else this.session_keys.push(key);
+
+   try
+   {
+      await this.pool.query(`UPDATE users SET session_keys = $2 WHERE id = $1;`, [ this.id, this.session_keys ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+
+   return key;
 }
 
 export default UserModel;

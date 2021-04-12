@@ -50,7 +50,7 @@ class AccountAPI extends Router
       const user: User = {
          ...req.signupForm,
          rank: 0,
-         dateJoin: new Date()
+         date_join: new Date()
       };
 
       try
@@ -72,7 +72,7 @@ class AccountAPI extends Router
    {
       try
       {
-         var user = await this.model.user.searchByAliasOrEmail(req.loginForm.aliasOrEmail, [ "alias", "password" ]);
+         var user = await this.model.user.searchByAliasOrEmail(req.loginForm.aliasOrEmail, [ "id", "alias", "password", "session_keys" ]);
       }
       catch(err)
       {
@@ -87,7 +87,7 @@ class AccountAPI extends Router
 
       try
       {
-         //var sessionKey = await this.model.session.registerSession(user);
+         var sessionKey = await user.registerSession();
       }
       catch(err)
       {
@@ -98,12 +98,12 @@ class AccountAPI extends Router
       req.session["alias"] = user.alias;
       req.session.save();
 
-      /*res.cookie("user", {
+      res.cookie("user", {
          alias: user.alias,
          key: sessionKey
       }, {
          maxAge: 365 * 24 * 60 * 60 * 1000
-      });*/
+      });
 
       res.json({
          alias: user.alias

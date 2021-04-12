@@ -7,7 +7,8 @@ CREATE TABLE users
 	alias varchar(16) UNIQUE NOT NULL,
 	email varchar(255) UNIQUE NOT NULL,
 	class int,
-	date_join date
+	date_join date,
+	session_keys varchar(8)[] DEFAULT ARRAY[]::VARCHAR(8)[]
 );
 
 CREATE TABLE posts
