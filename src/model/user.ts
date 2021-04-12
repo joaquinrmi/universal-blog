@@ -1,13 +1,61 @@
 import { Pool } from "pg";
 import { encrypt, decrypt } from "../encryption";
+import Skeleton from "./skeleton";
+import BasicModel from "./basic_model";
 
-class UserModel
+export interface User
+{
+   password: string;
+   name: string;
+   surname: string;
+   alias: string;
+   email: string;
+   rank: number;
+   dateJoin: Date;
+}
+
+export interface UserSchema extends User
+{
+   id: number;
+}
+
+export interface UserDocument extends UserSchema
+{
+   checkPassword(password: string): boolean;
+}
+
+const userSkeleton = new Skeleton<UserDocument>();
+
+class UserModel extends BasicModel<UserDocument>
 {
    pool: Pool;
 
    constructor(pool: Pool)
    {
+      super(userSkeleton);
+
       this.pool = pool;
+   }
+
+   async searchByAliasOrEmail(aliasOrEmail: string, props?: Array<string>): Promise<UserDocument>
+   {
+      if(!props)
+      {
+         props = [ "id", "password", "name", "surname", "alias", "email", "rank", "date_join" ];
+      }
+
+      const query = `SELECT ${props.join(",")} FROM users WHERE alias=$1 OR email=$1`;
+
+      try
+      {
+         var res = await this.pool.query(query, [ aliasOrEmail ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
    }
 
    async checkAliasAvailability(alias: string): Promise<boolean>
@@ -54,15 +102,10 @@ class UserModel
    }
 }
 
-export interface User
+userSkeleton.methods.checkPassword = function(this: UserDocument, password: string): boolean
 {
-   password: string;
-   name: string;
-   surname: string;
-   alias: string;
-   email: string;
-   rank: number;
-   dateJoin: Date;
+   if(!this.password) return false;
+   return password == decrypt(this.password);
 }
 
 export default UserModel;
