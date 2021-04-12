@@ -34,7 +34,6 @@ const userSkeleton = new Skeleton<UserDocument>();
 
 class UserModel extends BasicModel<UserDocument>
 {
-   pool: Pool;
    private props = [ "id", "password", "name", "surname", "alias", "email", "rank", "date_join", "session_keys" ];
 
    constructor(pool: Pool)

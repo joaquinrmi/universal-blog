@@ -13,10 +13,13 @@ CREATE TABLE users
 
 CREATE TABLE posts
 (
-	id serial PRIMARY KEY,
+	id text PRIMARY KEY,
 	author_id int references users(id),
 	title varchar(128) NOT NULL,
 	content text[] NOT NULL,
+	cover text NOT NULL,
+	gallery text[] DEFAULT ARRAY[]::TEXT[],
+	gallery_position int[] DEFAULT ARRAY[]::INT[],
 	tags varchar(32)[] DEFAULT ARRAY[]::VARCHAR(32)[],
 	comment_count int DEFAULT 0,
 	like_count int DEFAULT 0,
@@ -27,7 +30,14 @@ CREATE TABLE comments
 (
 	id serial PRIMARY KEY,
 	author_id int references users(id),
-	post_id int references posts(id),
+	post_id text references posts(id),
 	content text[] NOT NULL,
 	date_created timestamp
+);
+
+CREATE TABLE likes
+(
+	id serial PRIMARY KEY,
+	author_id int references users(id),
+	post_id text references posts(id)
 );
