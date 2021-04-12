@@ -27,6 +27,7 @@ export interface UserDocument extends UserSchema
 
    checkPassword(password: string): boolean;
    registerSession(): Promise<string>;
+   checkSession(key: string): boolean;
 }
 
 const userSkeleton = new Skeleton<UserDocument>();
@@ -145,6 +146,12 @@ userSkeleton.methods.registerSession = async function(this: UserDocument): Promi
    }
 
    return key;
+}
+
+userSkeleton.methods.checkSession = function(this: UserDocument, key: string): boolean
+{
+   if(!this.session_keys) return false;
+   return this.session_keys.indexOf(key) != -1;
 }
 
 export default UserModel;

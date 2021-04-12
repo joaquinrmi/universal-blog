@@ -55,7 +55,7 @@ class Router
 
       for(let i = 0; i < routes.length; ++i)
       {
-         this.router.use(routes[i], middleware);
+         this.router.use(routes[i], middleware.bind(this));
       }
    }
 }

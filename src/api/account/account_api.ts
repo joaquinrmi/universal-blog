@@ -16,14 +16,17 @@ class AccountAPI extends Router
       super([
          new RouteMap(MethodType.Post, "/create", "createAccount"),
          new RouteMap(MethodType.Post, "/login", "login"),
+         new RouteMap(MethodType.Post, "/restore-session", "restoreSession"),
       ]);
 
       this.model = model;
 
       this.registerFunction("createAccount", this.createAccount);
       this.registerFunction("login", this.login);
+      this.registerFunction("restoreSession", this.restoreSession);
 
       this.useMiddleware(this.checkSignupForm, [ "/create" ]);
+      this.useMiddleware(this.restoreSessionMid, [ "/login", "/restore-session"]);
       this.useMiddleware(this.checkLoginForm, [ "/login" ]);
    }
 
@@ -110,6 +113,11 @@ class AccountAPI extends Router
       });
    }
 
+   private async restoreSession(req: Request, res: Response): Promise<any>
+   {
+      res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
+   }
+
    private async checkSignupForm(req: Request, res: Response, next: NextFunction): Promise<any>
    {
       const exit = (err: string) => {
@@ -146,6 +154,48 @@ class AccountAPI extends Router
       req.loginForm = req.body;
 
       next();
+   }
+
+   private async restoreSessionMid(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      if(!req.cookies["user"] || !req.cookies["user"].alias || !req.cookies["user"].key)
+      {
+         return next();
+      }
+
+      try
+      {
+         var user = await this.model.user.searchByAliasOrEmail(req.cookies["user"].alias.toString(), [ "alias", "session_keys" ]);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      if(!user)
+      {
+         return next();
+      }
+
+      if(!user.checkSession(req.cookies["user"].key.toString()))
+      {
+         return next();
+      }
+
+      req.session["alias"] = user.alias;
+      req.session.save();
+
+      res.cookie("user", {
+         alias: user.alias,
+         key: req.cookies["user"].key
+      }, {
+         maxAge: 365 * 24 * 60 * 60 * 1000
+      });
+
+      res.json({
+         alias: user.alias
+      });
    }
 }
 
