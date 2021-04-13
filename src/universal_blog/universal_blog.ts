@@ -6,12 +6,14 @@ import * as cookieParser from "cookie-parser";
 import Model from "../model";
 
 import AccountAPI from "../api/account";
+import PostAPI from "../api/post";
 
 class UniversalBlog
 {
    app = express();
    model: Model;
    accountAPI: AccountAPI;
+   postAPI: PostAPI;
 
    constructor()
    {
@@ -28,6 +30,7 @@ class UniversalBlog
       this.model = new Model();
 
       this.accountAPI = new AccountAPI(this.model);
+      this.postAPI = new PostAPI(this.model);
 
       this.app.set("port", process.env.PORT);
 
@@ -41,6 +44,7 @@ class UniversalBlog
       }));
 
       this.app.use("/api/account", this.accountAPI.use());
+      this.app.use("/api/post", this.postAPI.use());
    }
 
    start()
