@@ -14,12 +14,14 @@ class PostAPI extends Router
    constructor(model: Model)
    {
       super([
-         new RouteMap(MethodType.Post, "/create", "createPost")
+         new RouteMap(MethodType.Post, "/create", "createPost"),
+         new RouteMap(MethodType.Get, "/get-single", "getPost"),
       ]);
 
       this.model = model;
 
       this.registerFunction("createPost", this.createPost);
+      this.registerFunction("getPost", this.getPost);
 
       this.useMiddleware(this.checkSession, [ "/create" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create"] );
@@ -57,6 +59,41 @@ class PostAPI extends Router
 
       res.json({
          postId
+      });
+   }
+
+   private async getPost(req: Request, res: Response): Promise<any>
+   {
+      if(!req.query.postId)
+      {
+         return res.status(StatusCode.BadRequest).json(new ErrorResponse(ErrorType.InvalidQuery));
+      }
+
+      try
+      {
+         var post = await this.model.post.searchById(req.query.postId.toString());
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      if(!post)
+      {
+         return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+      }
+      
+      res.json({
+         title: post.title,
+         content: post.content,
+         cover: post.cover,
+         gallery: post.gallery,
+         galleryPosition: post.gallery_position,
+         tags: post.tags,
+         commentCount: post.comment_count,
+         likeCount: post.like_count,
+         dateCreated: post.date_created
       });
    }
 

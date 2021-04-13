@@ -68,6 +68,22 @@ class PostModel extends BasicModel<PostDocument>
       return id;
    }
 
+   async searchById(id: string, props?: Array<string>): Promise<PostDocument>
+   {
+      if(!props) props = this.props;
+
+      try
+      {
+         var res = await this.pool.query(`SELECT ${props.join(",")} FROM posts WHERE id = $1`, [ id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
+   }
+
    async searchOneByTitle(title: string, user?: UserDocument, props?: Array<string>): Promise<PostDocument>
    {
       if(!props) props = this.props;
