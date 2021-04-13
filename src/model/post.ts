@@ -80,7 +80,7 @@ class PostModel extends BasicModel<PostDocument>
       if(!props) props = this.props;
 
       const where = query.author || query.tags.length > 0;
-      const whereClause = where ? `WHERE ${query.author ? `author_id = ${query.author}` : ""} ${query.tags.length > 0 ? query.tags.map(value => `'${value}' = ANY(tags)`) : ""}` : "";
+      const whereClause = where ? `WHERE ${query.author ? `author_id = ${query.author}` : ""} ${query.tags.length > 0 ? query.tags.map(value => `'${value}' = ANY(tags)`).join(" AND ") : ""}` : "";
 
       const orderByClause = `ORDER BY ${query.orderType} ${query.order}`;
 
