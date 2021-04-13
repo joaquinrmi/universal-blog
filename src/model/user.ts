@@ -43,12 +43,25 @@ class UserModel extends BasicModel<UserDocument>
       this.pool = pool;
    }
 
+   async searchById(id: number, props?: Array<string>): Promise<UserDocument>
+   {
+      if(!props) props = this.props;
+
+      try
+      {
+         var res = await this.pool.query(`SELECT ${props.join(",")} FROM users WHERE id = $1`, [ id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
+   }
+
    async searchByAliasOrEmail(aliasOrEmail: string, props?: Array<string>): Promise<UserDocument>
    {
-      if(!props)
-      {
-         props = this.props;
-      }
+      if(!props) props = this.props;
 
       const query = `SELECT ${props.join(",")} FROM users WHERE alias=$1 OR email=$1`;
 

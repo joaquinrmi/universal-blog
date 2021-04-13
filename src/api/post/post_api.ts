@@ -4,8 +4,9 @@ import RouteMap, { MethodType } from "../router/route_map";
 import StatusCode from "../status_code";
 import ErrorResponse from "../error_response";
 import Model from "../../model/";
-import { Post } from "../../model/post";
+import { Post, SearchPostQuery } from "../../model/post";
 import ErrorType from "./error";
+import { UserDocument } from "../../model/user";
 
 class PostAPI extends Router
 {
@@ -16,12 +17,14 @@ class PostAPI extends Router
       super([
          new RouteMap(MethodType.Post, "/create", "createPost"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
+         new RouteMap(MethodType.Get, "/get-list", "searchPosts")
       ]);
 
       this.model = model;
 
       this.registerFunction("createPost", this.createPost);
       this.registerFunction("getPost", this.getPost);
+      this.registerFunction("searchPosts", this.searchPosts);
 
       this.useMiddleware(this.checkSession, [ "/create" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create"] );
@@ -95,6 +98,109 @@ class PostAPI extends Router
          likeCount: post.like_count,
          dateCreated: post.date_created
       });
+   }
+
+   private async searchPosts(req: Request, res: Response): Promise<any>
+   {
+      if(!req.query.offset || !req.query.count)
+      {
+         return res.status(StatusCode.BadRequest).json(new ErrorResponse(ErrorType.InvalidQuery));
+      }
+
+      let searchQuery: SearchPostQuery = {
+         count: Number(req.query.count),
+         offset: Number(req.query.offset),
+         author: null,
+         tags: [],
+         orderType: "date_created",
+         order: "desc"
+      };
+
+      if(req.query.tags)
+      {
+         try
+         {
+            searchQuery.tags = JSON.parse(req.query.tags.toString());
+         }
+         catch(err)
+         {
+            return res.status(StatusCode.BadRequest).json(new ErrorResponse(ErrorType.InvalidQuery));
+         }
+
+         if(!Array.isArray(searchQuery.tags))
+         {
+            return res.status(StatusCode.BadRequest).json(new ErrorResponse(ErrorType.InvalidQuery));
+         }
+      }
+
+      if(req.query.order_type)
+      {
+         searchQuery.orderType = req.query.order_type.toString();
+      }
+
+      if(req.query.order)
+      {
+         searchQuery.order = req.query.order.toString();
+      }
+
+      if(req.query.author)
+      {
+         try
+         {
+            var user = await this.model.user.searchByAliasOrEmail(req.query.author.toString(), [ "id" ]);
+         }
+         catch(err)
+         {
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         }
+
+         if(!user)
+         {
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.UserDoesNotExist));
+         }
+
+         searchQuery.author = user.id;
+      }
+
+      try
+      {
+         var posts = await this.model.post.search(searchQuery);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      let result = new Array<any>(posts.length);
+      for(let i = 0; i < posts.length; ++i)
+      {
+         let user: UserDocument;
+         try
+         {
+            user = await this.model.user.searchById(posts[i].author_id, [ "alias" ]);
+         }
+         catch(err)
+         {
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         }
+
+         result[i] = {
+            title: posts[i].title,
+            content: posts[i].content,
+            gallery: posts[i].gallery,
+            galleryPosition: posts[i].gallery_position,
+            tags: posts[i].tags,
+            authorAlias: user.alias,
+            commentCount: posts[i].comment_count,
+            likeCount: posts[i].like_count,
+            dateCreated: posts[i].date_created.getTime()
+         };
+      }
+
+      res.json(result);
    }
 
    private async checkCreatePostForm(req: Request, res: Response, next: NextFunction): Promise<any>

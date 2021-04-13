@@ -3,6 +3,7 @@ import { encrypt } from "../encryption";
 import Skeleton from "./skeleton";
 import BasicModel from "./basic_model";
 import { UserDocument } from "./user";
+import BasicQuery from "./basic_query";
 
 export interface Post
 {
@@ -29,6 +30,12 @@ export interface PostDocument extends PostSchema
 }
 
 const postSkeleton = new Skeleton<PostDocument>();
+
+export interface SearchPostQuery extends BasicQuery
+{
+   author: number;
+   tags: Array<string>;
+}
 
 class PostModel extends BasicModel<PostDocument>
 {
@@ -66,6 +73,37 @@ class PostModel extends BasicModel<PostDocument>
       }
 
       return id;
+   }
+
+   async search(query: SearchPostQuery, props?: Array<string>): Promise<Array<PostDocument>>
+   {
+      if(!props) props = this.props;
+
+      const where = query.author || query.tags.length > 0;
+      const whereClause = where ? `WHERE ${query.author ? `author_id = ${query.author}` : ""} ${query.tags.length > 0 ? query.tags.map(value => `'${value}' = ANY(tags)`) : ""}` : "";
+
+      const orderByClause = `ORDER BY ${query.orderType} ${query.order}`;
+
+      const dbQuery = `SELECT ${props.join(",")} FROM posts ${whereClause} ${orderByClause} LIMIT $1 OFFSET $2`;
+
+      const queryValues = [ query.count, query.offset ];
+
+      try
+      {
+         var res = await this.pool.query(dbQuery, queryValues);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      const posts = new Array<PostDocument>(res.rowCount);
+      for(let i = 0; i < res.rowCount; ++i)
+      {
+         posts[i] = this.getDocument(res.rows[i]);
+      }
+
+      return posts;
    }
 
    async searchById(id: string, props?: Array<string>): Promise<PostDocument>
