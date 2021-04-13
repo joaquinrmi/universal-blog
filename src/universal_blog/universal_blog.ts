@@ -3,10 +3,21 @@ import * as path from "path";
 import * as express from "express";
 import * as session from "express-session";
 import * as cookieParser from "cookie-parser";
+import * as multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
 import Model from "../model";
 
-import AccountAPI from "../api/account";
-import PostAPI from "../api/post";
+import AccountAPI from "../api/account/";
+import PostAPI from "../api/post/";
+import UploadAPI from "../api/upload/";
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+cloudinary.config({
+   cloud_name: process.env.CLOUD_NAME,
+   api_key: process.env.CLOUD_API_KEY,
+   api_secret: process.env.CLOUD_API_SECRET
+});
 
 class UniversalBlog
 {
@@ -14,6 +25,7 @@ class UniversalBlog
    model: Model;
    accountAPI: AccountAPI;
    postAPI: PostAPI;
+   uploadAPI: UploadAPI;
 
    constructor()
    {
@@ -31,6 +43,7 @@ class UniversalBlog
 
       this.accountAPI = new AccountAPI(this.model);
       this.postAPI = new PostAPI(this.model);
+      this.uploadAPI = new UploadAPI(this.model, upload);
 
       this.app.set("port", process.env.PORT);
 
@@ -45,6 +58,7 @@ class UniversalBlog
 
       this.app.use("/api/account", this.accountAPI.use());
       this.app.use("/api/post", this.postAPI.use());
+      this.app.use("/api/upload", this.uploadAPI.use());
    }
 
    start()
