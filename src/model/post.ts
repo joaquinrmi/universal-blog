@@ -39,7 +39,7 @@ class PostModel extends BasicModel<PostDocument>
       super(pool, postSkeleton);
    }
 
-   async createPost(user: UserDocument, post: Post): Promise<void>
+   async createPost(user: UserDocument, post: Post): Promise<string>
    {
       try
       {
@@ -52,7 +52,7 @@ class PostModel extends BasicModel<PostDocument>
 
       if(postFound)
       {
-         return Promise.reject(new Error("the title is already used"));
+         return null;
       }
 
       const id = encrypt(`${user.alias}-${post.title}`, process.env.TITLE_ENCRYPT_SECRET);
@@ -64,6 +64,8 @@ class PostModel extends BasicModel<PostDocument>
       {
          return Promise.reject(err);
       }
+
+      return id;
    }
 
    async searchOneByTitle(title: string, user?: UserDocument, props?: Array<string>): Promise<PostDocument>

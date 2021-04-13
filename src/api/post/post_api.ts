@@ -27,7 +27,37 @@ class PostAPI extends Router
 
    private async createPost(req: Request, res: Response): Promise<any>
    {
+      const postData: Post = {
+         title: req.postForm.title,
+         content: req.postForm.content,
+         cover: req.postForm.cover,
+         gallery: req.postForm.gallery,
+         gallery_position: req.postForm.galleryPosition,
+         tags: req.postForm.tags,
+         comment_count: 0,
+         like_count: 0,
+         date_created: new Date()
+      };
 
+      try
+      {
+         var user = await this.model.user.searchByAliasOrEmail(req.session["alias"]);
+         var postId = await this.model.post.createPost(user, postData);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      if(!postId)
+      {
+         return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.TheTitleIsAlreadyUsed));
+      }
+
+      res.json({
+         postId
+      });
    }
 
    private async checkCreatePostForm(req: Request, res: Response, next: NextFunction): Promise<any>
@@ -70,7 +100,7 @@ class PostAPI extends Router
       }
       else if(req.body.tags) return exit(ErrorType.InvalidForm);
 
-      req.postForm = req.body();
+      req.postForm = req.body;
       if(!req.postForm.gallery) req.postForm.gallery = [];
       if(!req.postForm.galleryPosition) req.postForm.galleryPosition = [];
       if(!req.postForm.tags) req.postForm.tags = [];
