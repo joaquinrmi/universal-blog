@@ -104,6 +104,7 @@ class PostAPI extends Router
       try
       {
          var post = await this.model.post.searchById(req.query.postId.toString());
+         var author = await this.model.user.searchById(post.author_id, [ "alias" ]);
       }
       catch(err)
       {
@@ -123,6 +124,7 @@ class PostAPI extends Router
          gallery: post.gallery,
          galleryPosition: post.gallery_position,
          tags: post.tags,
+         authorAlias: author.alias,
          commentCount: post.comment_count,
          likeCount: post.like_count,
          dateCreated: post.date_created
@@ -219,6 +221,7 @@ class PostAPI extends Router
          result[i] = {
             title: posts[i].title,
             content: posts[i].content,
+            cover: posts[i].cover,
             gallery: posts[i].gallery,
             galleryPosition: posts[i].gallery_position,
             tags: posts[i].tags,
