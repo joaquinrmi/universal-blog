@@ -148,7 +148,7 @@ postSkeleton.methods.addComment = async function(this: PostDocument, client?: Po
       return Promise.reject("field 'id' is undefined");
    }
 
-   if(!this.comment_count)
+   if(this.comment_count === undefined)
    {
       return Promise.reject("field 'comment_count' is undefined");
    }

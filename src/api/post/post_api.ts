@@ -7,6 +7,7 @@ import Model from "../../model/";
 import { Post, SearchPostQuery } from "../../model/post";
 import ErrorType from "./error";
 import { UserDocument } from "../../model/user";
+import { Comment } from "../../model/comment";
 
 class PostAPI extends Router
 {
@@ -16,6 +17,7 @@ class PostAPI extends Router
    {
       super([
          new RouteMap(MethodType.Post, "/create", "createPost"),
+         new RouteMap(MethodType.Post, "/comment", "createComment"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
          new RouteMap(MethodType.Get, "/get-list", "searchPosts")
       ]);
@@ -23,11 +25,13 @@ class PostAPI extends Router
       this.model = model;
 
       this.registerFunction("createPost", this.createPost);
+      this.registerFunction("createComment", this.createComment);
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
 
-      this.useMiddleware(this.checkSession, [ "/create" ]);
-      this.useMiddleware(this.checkCreatePostForm, [ "/create"] );
+      this.useMiddleware(this.checkSession, [ "/create", "/comment" ]);
+      this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
+      this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
    }
 
    private async createPost(req: Request, res: Response): Promise<any>
@@ -63,6 +67,31 @@ class PostAPI extends Router
       res.json({
          postId
       });
+   }
+
+   private async createComment(req: Request, res: Response): Promise<any>
+   {
+      try
+      {
+         var user = await this.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
+         var post = await this.model.post.searchById(req.commentForm.postId, [ "id", "comment_count" ]);
+
+         const comment: Comment = {
+            author_id: user.id,
+            post_id: post.id,
+            content: req.commentForm.content,
+            date_created: new Date()
+         };
+
+         await this.model.comment.registerComment(comment, post);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      return res.json({});
    }
 
    private async getPost(req: Request, res: Response): Promise<any>
@@ -247,6 +276,19 @@ class PostAPI extends Router
       if(!req.postForm.gallery) req.postForm.gallery = [];
       if(!req.postForm.galleryPosition) req.postForm.galleryPosition = [];
       if(!req.postForm.tags) req.postForm.tags = [];
+
+      next();
+   }
+
+   private async checkCommentForm(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
+
+      if(!req.body) return exit(ErrorType.InvalidForm);
+      if(typeof req.body.postId != "string") return exit(ErrorType.InvalidForm);
+      if(!Array.isArray(req.body.content)) return exit(ErrorType.InvalidForm);
+
+      req.commentForm = req.body;
 
       next();
    }
