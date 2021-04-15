@@ -8,6 +8,7 @@ import { Post, SearchPostQuery } from "../../model/post";
 import ErrorType from "./error";
 import { UserDocument } from "../../model/user";
 import { Comment } from "../../model/comment";
+import { Like } from "../../model/like";
 
 class PostAPI extends Router
 {
@@ -18,6 +19,7 @@ class PostAPI extends Router
       super([
          new RouteMap(MethodType.Post, "/create", "createPost"),
          new RouteMap(MethodType.Post, "/comment", "createComment"),
+         new RouteMap(MethodType.Post, "/like", "like"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
          new RouteMap(MethodType.Get, "/get-list", "searchPosts")
       ]);
@@ -26,12 +28,14 @@ class PostAPI extends Router
 
       this.registerFunction("createPost", this.createPost);
       this.registerFunction("createComment", this.createComment);
+      this.registerFunction("like", this.like);
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
 
-      this.useMiddleware(this.checkSession, [ "/create", "/comment" ]);
+      this.useMiddleware(this.checkSession, [ "/create", "/comment", "/like" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
       this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
+      this.useMiddleware(this.checkLikeForm, [ "/like" ]);
    }
 
    private async createPost(req: Request, res: Response): Promise<any>
@@ -73,8 +77,8 @@ class PostAPI extends Router
    {
       try
       {
-         var user = await this.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-         var post = await this.model.post.searchById(req.commentForm.postId, [ "id", "comment_count" ]);
+         const user = await this.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
+         const post = await this.model.post.searchById(req.commentForm.postId, [ "id", "comment_count" ]);
 
          const comment: Comment = {
             author_id: user.id,
@@ -84,6 +88,29 @@ class PostAPI extends Router
          };
 
          await this.model.comment.registerComment(comment, post);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      return res.json({});
+   }
+
+   private async like(req: Request, res: Response): Promise<any>
+   {
+      try
+      {
+         const user = await this.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
+         const post = await this.model.post.searchById(req.likeForm.postId, [ "id", "like_count" ]);
+
+         const like: Like = {
+            author_id: user.id,
+            post_id: req.likeForm.postId
+         };
+
+         await this.model.like.registerLike(like, post);
       }
       catch(err)
       {
@@ -292,6 +319,18 @@ class PostAPI extends Router
       if(!Array.isArray(req.body.content)) return exit(ErrorType.InvalidForm);
 
       req.commentForm = req.body;
+
+      next();
+   }
+
+   private async checkLikeForm(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
+
+      if(!req.body) return exit(ErrorType.InvalidForm);
+      if(typeof req.body.postId != "string") return exit(ErrorType.InvalidForm);
+
+      req.likeForm = req.body;
 
       next();
    }
