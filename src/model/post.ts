@@ -29,6 +29,7 @@ export interface PostDocument extends PostSchema
    pool: Pool;
 
    addComment(client?: PoolClient): Promise<void>;
+   addLike(client?: PoolClient): Promise<void>;
 }
 
 const postSkeleton = new Skeleton<PostDocument>();
@@ -166,6 +167,33 @@ postSkeleton.methods.addComment = async function(this: PostDocument, client?: Po
       return Promise.reject(err);
    }
    ++this.comment_count;
+}
+
+postSkeleton.methods.addLike = async function(this: PostDocument, client?: PoolClient): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("field 'id' is undefined");
+   }
+
+   if(this.like_count === undefined)
+   {
+      return Promise.reject("field 'like_count' is undefined");
+   }
+
+   const query = `UPDATE posts SET like_count = like_count + 1 WHERE id = $1`;
+   const queryVals = [ this.id ];
+
+   try
+   {
+      if(client) await client.query(query, queryVals);
+      else await this.pool.query(query, queryVals);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+   ++this.like_count;
 }
 
 export default PostModel;

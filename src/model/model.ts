@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import UserModel from "./user";
 import PostModel from "./post";
 import CommentModel from "./comment";
+import LikeModel from "./like";
 
 class Model
 {
@@ -9,6 +10,7 @@ class Model
    user: UserModel;
    post: PostModel;
    comment: CommentModel;
+   like: LikeModel;
 
    constructor()
    {
@@ -16,6 +18,7 @@ class Model
       this.user = new UserModel(this.pool);
       this.post = new PostModel(this.pool);
       this.comment = new CommentModel(this.pool);
+      this.like = new LikeModel(this.pool);
    }
 }
 
