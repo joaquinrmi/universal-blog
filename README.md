@@ -40,7 +40,8 @@ Las rutas de los servicios de cuenta comienzan siempre con `/account`.
    "alias": "string",
    "email": "string"
 }
-``` 
+```
+El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclusive. Tanto `name` como `surname` deben tener una longitud máxima de `32` caracteres, mientras que `alias` solo puede tener a lo más `16` caracteres.
 
 **Respuesta**:
 ```json
@@ -106,6 +107,7 @@ Las rutas de los servicios de publicación comienzan siempre con `/post`.
    "tags": [ "string" ]
 }
 ```
+El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo, mientras que `galleryPosition` debe ser un arreglo numérico del mismo tamaño que `gallery` y que especificará la posición de las imágenes con respecto de los párrafos. Por ejemplo, el índice `0` especifica que la imagen debe colocarse justo antes del comienzo del primer párrafo.
 
 **Respuesta**:
 ```json
@@ -125,6 +127,24 @@ Las rutas de los servicios de publicación comienzan siempre con `/post`.
 {
    "postId": "string",
    "content": [ "string" ]
+}
+```
+
+**Respuesta**:
+```json
+{}
+```
+
+#### `/post/like`
+
+**Descripción**: Registra una nuevo "me gusta" en un artículo para el usuario con la sesión actual.
+
+**Método**: `POST`.
+
+**Formulario**:
+```json
+{
+   "postId": "string",
 }
 ```
 
