@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import { encrypt } from "../encryption";
 import Skeleton from "./skeleton";
 import BasicModel from "./basic_model";
@@ -20,13 +20,15 @@ export interface Post
 
 export interface PostSchema extends Post
 {
-   id: number;
+   id: string;
    author_id: number;
 }
 
 export interface PostDocument extends PostSchema
 {
    pool: Pool;
+
+   addComment(client?: PoolClient): Promise<void>;
 }
 
 const postSkeleton = new Skeleton<PostDocument>();
@@ -137,6 +139,33 @@ class PostModel extends BasicModel<PostDocument>
 
       return this.getDocument(res.rows[0]);
    }
+}
+
+postSkeleton.methods.addComment = async function(this: PostDocument, client?: PoolClient): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("field 'id' is undefined");
+   }
+
+   if(!this.comment_count)
+   {
+      return Promise.reject("field 'comment_count' is undefined");
+   }
+
+   const query = `UPDATE posts SET comment_count = comment_count + 1 WHERE id = $1`;
+   const queryVals = [ this.id ];
+
+   try
+   {
+      if(client) await client.query(query, queryVals);
+      else await this.pool.query(query, queryVals);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+   ++this.comment_count;
 }
 
 export default PostModel;
