@@ -50,6 +50,24 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 }
 ```
 
+#### `/account/delete`
+
+**Descripción**: Elimina la cuenta del usuario con la sesión actual.
+
+**Método**: `POST`.
+
+**Formulario**:
+```json
+{
+   "password": "string"
+}
+```
+
+**Respuesta**:
+```json
+{}
+```
+
 #### `/account/login`
 
 **Descripción**: Inicia sesión con una cuenta existente.
