@@ -3,18 +3,16 @@ import Router from "../router/";
 import RouteMap, { MethodType } from "../router/route_map";
 import StatusCode from "../status_code";
 import ErrorResponse from "../error_response";
-import Model from "../../model/";
 import { Post, SearchPostQuery } from "../../model/post";
 import ErrorType from "./error";
 import { UserDocument } from "../../model/user";
 import { Comment } from "../../model/comment";
 import { Like } from "../../model/like";
+import useModel from "../use_model";
 
 class PostAPI extends Router
 {
-   model: Model;
-
-   constructor(model: Model)
+   constructor()
    {
       super([
          new RouteMap(MethodType.Post, "/create", "createPost"),
@@ -24,14 +22,13 @@ class PostAPI extends Router
          new RouteMap(MethodType.Get, "/get-list", "searchPosts")
       ]);
 
-      this.model = model;
-
       this.registerFunction("createPost", this.createPost);
       this.registerFunction("createComment", this.createComment);
       this.registerFunction("like", this.like);
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
 
+      this.useMiddleware(useModel);
       this.useMiddleware(this.checkSession, [ "/create", "/comment", "/like" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
       this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
@@ -54,8 +51,8 @@ class PostAPI extends Router
 
       try
       {
-         var user = await this.model.user.searchByAliasOrEmail(req.session["alias"]);
-         var postId = await this.model.post.createPost(user, postData);
+         var user = await req.model.user.searchByAliasOrEmail(req.session["alias"]);
+         var postId = await req.model.post.createPost(user, postData);
       }
       catch(err)
       {
@@ -77,8 +74,8 @@ class PostAPI extends Router
    {
       try
       {
-         const user = await this.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-         const post = await this.model.post.searchById(req.commentForm.postId, [ "id", "comment_count" ]);
+         const user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
+         const post = await req.model.post.searchById(req.commentForm.postId, [ "id", "comment_count" ]);
 
          const comment: Comment = {
             author_id: user.id,
@@ -87,7 +84,7 @@ class PostAPI extends Router
             date_created: new Date()
          };
 
-         await this.model.comment.registerComment(comment, post);
+         await req.model.comment.registerComment(comment, post);
       }
       catch(err)
       {
@@ -102,15 +99,15 @@ class PostAPI extends Router
    {
       try
       {
-         const user = await this.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-         const post = await this.model.post.searchById(req.likeForm.postId, [ "id", "like_count" ]);
+         const user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
+         const post = await req.model.post.searchById(req.likeForm.postId, [ "id", "like_count" ]);
 
          const like: Like = {
             author_id: user.id,
             post_id: req.likeForm.postId
          };
 
-         await this.model.like.registerLike(like, post);
+         await req.model.like.registerLike(like, post);
       }
       catch(err)
       {
@@ -130,8 +127,8 @@ class PostAPI extends Router
 
       try
       {
-         var post = await this.model.post.searchById(req.query.postId.toString());
-         var author = await this.model.user.searchById(post.author_id, [ "alias" ]);
+         var post = await req.model.post.searchById(req.query.postId.toString());
+         var author = await req.model.user.searchById(post.author_id, [ "alias" ]);
       }
       catch(err)
       {
@@ -205,7 +202,7 @@ class PostAPI extends Router
       {
          try
          {
-            var user = await this.model.user.searchByAliasOrEmail(req.query.author.toString(), [ "id" ]);
+            var user = await req.model.user.searchByAliasOrEmail(req.query.author.toString(), [ "id" ]);
          }
          catch(err)
          {
@@ -223,7 +220,7 @@ class PostAPI extends Router
 
       try
       {
-         var posts = await this.model.post.search(searchQuery);
+         var posts = await req.model.post.search(searchQuery);
       }
       catch(err)
       {
@@ -237,7 +234,7 @@ class PostAPI extends Router
          let user: UserDocument;
          try
          {
-            user = await this.model.user.searchById(posts[i].author_id, [ "alias" ]);
+            user = await req.model.user.searchById(posts[i].author_id, [ "alias" ]);
          }
          catch(err)
          {

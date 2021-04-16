@@ -3,25 +3,22 @@ import Router from "../router/";
 import RouteMap, { MethodType } from "../router/route_map";
 import StatusCode from "../status_code";
 import ErrorResponse from "../error_response";
-import Model from "../../model/";
 import { Multer } from "multer";
 import ErrorType from "./error";
 import ImageKeeper from "../../image_keeper";
+import useModel from "../use_model";
 
 class UploadAPI extends Router
 {
-   model: Model;
-
-   constructor(model: Model, upload: Multer)
+   constructor(upload: Multer)
    {
       super([
          new RouteMap(MethodType.Post, "/image", "uploadImage")
       ]);
 
-      this.model = model;
-
       this.registerFunction("uploadImage", this.uploadImage);
 
+      this.useMiddleware(useModel);
       this.useMiddleware(this.checkSession, [ "/image" ]);
       this.useMiddleware(upload.single("image"), [ "/image" ]);
    }
@@ -30,7 +27,7 @@ class UploadAPI extends Router
    {
       try
       {
-         var user = await this.model.user.searchByAliasOrEmail(req.session["alias"]);
+         var user = await req.model.user.searchByAliasOrEmail(req.session["alias"]);
       }
       catch(err)
       {

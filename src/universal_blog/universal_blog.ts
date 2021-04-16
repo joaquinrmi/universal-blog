@@ -5,7 +5,6 @@ import * as session from "express-session";
 import * as cookieParser from "cookie-parser";
 import * as multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
-import Model from "../model";
 
 import AccountAPI from "../api/account/";
 import PostAPI from "../api/post/";
@@ -22,7 +21,6 @@ cloudinary.config({
 class UniversalBlog
 {
    app = express();
-   model: Model;
    accountAPI: AccountAPI;
    postAPI: PostAPI;
    uploadAPI: UploadAPI;
@@ -39,11 +37,9 @@ class UniversalBlog
          return;
       }
 
-      this.model = new Model();
-
-      this.accountAPI = new AccountAPI(this.model);
-      this.postAPI = new PostAPI(this.model);
-      this.uploadAPI = new UploadAPI(this.model, upload);
+      this.accountAPI = new AccountAPI();
+      this.postAPI = new PostAPI();
+      this.uploadAPI = new UploadAPI(upload);
 
       this.app.set("port", process.env.PORT);
 

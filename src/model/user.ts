@@ -119,6 +119,26 @@ class UserModel extends BasicModel<UserDocument>
          return Promise.reject(err);
       }
    }
+
+   async deleteUser(user: UserDocument): Promise<void>
+   {
+      if(!user.id)
+      {
+         return Promise.reject("property 'id' of 'user' is undefined");
+      }
+
+      const query = "DELETE FROM users WHERE id = $1;";
+
+      try
+      {
+         if(this.client) await this.client.query(query, [ user.id ]);
+         else await this.pool.query(query, [ user.id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
 }
 
 userSkeleton.methods.checkPassword = function(this: UserDocument, password: string): boolean

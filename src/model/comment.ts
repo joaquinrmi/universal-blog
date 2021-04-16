@@ -1,7 +1,8 @@
 import BasicModel from "./basic_model";
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import Skeleton from "./skeleton";
-import { PostDocument } from "./post";
+import PostModel, { PostDocument } from "./post";
+import { UserDocument } from "./user";
 
 export interface Comment
 {
@@ -53,6 +54,91 @@ class CommentModel extends BasicModel<CommentDocument>
       finally
       {
          client.release();
+      }
+   }
+
+   async deleteAllUserComments(postModel: PostModel, user: UserDocument): Promise<void>
+   {
+      if(!user.id)
+      {
+         return Promise.reject("property 'id' of 'user' is undefined");
+      }
+
+      const selectQuery = "SELECT post_id FROM comments WHERE author_id = $1;";
+
+      try
+      {
+         if(this.client) var commentRes = await this.client.query(selectQuery, [ user.id ]);
+         else var commentRes = await this.pool.query(selectQuery, [ user.id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      const deleteQuery = "DELETE FROM comments WHERE author_id = $1;";
+
+      if(this.client)
+      {
+         try
+         {
+            for(let i = 0; i < commentRes.rowCount; ++i)
+            {
+               let postRes = await postModel.searchById(commentRes.rows[i]["post_id"], [ "id", "comment_count"]);
+
+               if(postRes) await postRes.removeComment(this.client);
+            }
+
+            await this.client.query(deleteQuery, [ user.id ]);
+         }
+         catch(err)
+         {
+            return Promise.reject(err);
+         }
+
+         return;
+      }
+
+      const client = await this.pool.connect();
+      try
+      {
+         await client.query("BEGIN");
+
+         for(let i = 0; i < commentRes.rowCount; ++i)
+         {
+            let postRes = await postModel.searchById(commentRes.rows[i]["post_id"], [ "id", "comment_count" ], client);
+
+            if(postRes) await postRes.removeComment(client);
+         }
+
+         await client.query(deleteQuery, [ user.id ]);
+
+         await client.query("COMMIT");
+      }
+      catch(err)
+      {
+         await client.query("ROLLBACK");
+         return Promise.reject(err);
+      }
+      finally
+      {
+         client.release();
+      }
+   }
+
+   async deleteAllPostComments(post: PostDocument, client?: PoolClient): Promise<void>
+   {
+      const query = "DELETE FROM comments WHERE post_id = $1;";
+
+      try
+      {
+         if(client) await client.query(query, [ post.id ]);
+         else if(this.client) await this.client.query(query, [ post.id ]);
+         else await this.pool.query(query, [ post.id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
       }
    }
 }

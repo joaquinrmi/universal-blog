@@ -4,6 +4,8 @@ import Skeleton from "./skeleton";
 import BasicModel from "./basic_model";
 import { UserDocument } from "./user";
 import BasicQuery from "./basic_query";
+import LikeModel from "./like";
+import CommentModel from "./comment";
 
 export interface Post
 {
@@ -30,6 +32,8 @@ export interface PostDocument extends PostSchema
 
    addComment(client?: PoolClient): Promise<void>;
    addLike(client?: PoolClient): Promise<void>;
+   removeLike(client?: PoolClient): Promise<void>;
+   removeComment(client?: PoolClient): Promise<void>;
 }
 
 const postSkeleton = new Skeleton<PostDocument>();
@@ -109,13 +113,16 @@ class PostModel extends BasicModel<PostDocument>
       return posts;
    }
 
-   async searchById(id: string, props?: Array<string>): Promise<PostDocument>
+   async searchById(id: string, props?: Array<string>, client?: PoolClient): Promise<PostDocument>
    {
       if(!props) props = this.props;
 
+      let query = `SELECT ${props.join(",")} FROM posts WHERE id = $1`;
+
       try
       {
-         var res = await this.pool.query(`SELECT ${props.join(",")} FROM posts WHERE id = $1`, [ id ]);
+         if(client) var res = await client.query(query, [ id ]);
+         else var res = await this.pool.query(query, [ id ]);
       }
       catch(err)
       {
@@ -139,6 +146,75 @@ class PostModel extends BasicModel<PostDocument>
       }
 
       return this.getDocument(res.rows[0]);
+   }
+
+   async deleteAllUserPosts(likeModel: LikeModel, commentModel: CommentModel, user: UserDocument): Promise<void>
+   {
+      if(!user.id)
+      {
+         return Promise.reject("property 'id' of 'user' is undefined");
+      }
+
+      const selectQuery = "SELECT id FROM posts WHERE author_id = $1;";
+
+      try
+      {
+         if(this.client) var postRes = await this.client.query(selectQuery, [ user.id ]);
+         else var postRes = await this.pool.query(selectQuery, [ user.id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      const deleteQuery = "DELETE FROM posts WHERE author_id = $1";
+
+      if(this.client)
+      {
+         try
+         {
+            for(let i = 0; i < postRes.rowCount; ++i)
+            {
+               const postDoc = this.getDocument(postRes.rows[i])
+
+               await likeModel.deleteAllPostLikes(postDoc);
+               await commentModel.deleteAllPostComments(postDoc);
+            }
+
+            await this.client.query(deleteQuery, [ user.id ]);
+         }
+         catch(err)
+         {
+            return Promise.reject(err);
+         }
+      }
+
+      const client = await this.pool.connect();
+      try
+      {
+         await client.query("BEGIN");
+
+         for(let i = 0; i < postRes.rowCount; ++i)
+         {
+            const postDoc = this.getDocument(postRes.rows[i])
+
+            await likeModel.deleteAllPostLikes(postDoc, client);
+            await commentModel.deleteAllPostComments(postDoc, client);
+         }
+
+         await client.query(deleteQuery, [ user.id ]);
+
+         await client.query("COMMIT");
+      }
+      catch(err)
+      {
+         await client.query("ROLLBACK");
+         return Promise.reject(err);
+      }
+      finally
+      {
+         client.release();
+      }
    }
 }
 
@@ -194,6 +270,60 @@ postSkeleton.methods.addLike = async function(this: PostDocument, client?: PoolC
       return Promise.reject(err);
    }
    ++this.like_count;
+}
+
+postSkeleton.methods.removeLike = async function(this: PostDocument, client?: PoolClient): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("field 'id' is undefined");
+   }
+
+   if(this.like_count === undefined)
+   {
+      return Promise.reject("field 'like_count' is undefined");
+   }
+
+   const query = `UPDATE posts SET like_count = like_count - 1 WHERE id = $1`;
+   const queryVals = [ this.id ];
+
+   try
+   {
+      if(client) await client.query(query, queryVals);
+      else await this.pool.query(query, queryVals);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+   --this.like_count;
+}
+
+postSkeleton.methods.removeComment = async function(this: PostDocument, client?: PoolClient): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("field 'id' is undefined");
+   }
+
+   if(this.comment_count === undefined)
+   {
+      return Promise.reject("field 'comment_count' is undefined");
+   }
+
+   const query = `UPDATE posts SET comment_count = comment_count - 1 WHERE id = $1`;
+   const queryVals = [ this.id ];
+
+   try
+   {
+      if(client) await client.query(query, queryVals);
+      else await this.pool.query(query, queryVals);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+   --this.comment_count;
 }
 
 export default PostModel;
