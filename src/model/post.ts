@@ -152,30 +152,48 @@ class PostModel extends BasicModel<PostDocument>
    {
       const deleteQuery = "DELETE FROM posts WHERE id = $1;";
 
-      try
-      {
-         if(client)
+      const deleteFunc = async (client: PoolClient) => {
+         try
          {
             await likeModel.deleteAllPostLikes(postId, client);
             await commentModel.deleteAllPostComments(postId, client);
             await client.query(deleteQuery, [ postId ]);
          }
-         else if(this.client)
+         catch(err)
          {
-            await likeModel.deleteAllPostLikes(postId);
-            await commentModel.deleteAllPostComments(postId);
-            await this.client.query(deleteQuery, [ postId ]);
+            return Promise.reject(err);
          }
-         else
+      };
+
+      if(client || this.client)
+      {
+         try
          {
-            await likeModel.deleteAllPostLikes(postId);
-            await commentModel.deleteAllPostComments(postId);
-            await this.pool.query(deleteQuery, [ postId ]);
+            await deleteFunc(client || this.client);
+         }
+         catch(err)
+         {
+            return Promise.reject(err);
          }
       }
-      catch(err)
+      else
       {
-         return Promise.reject(err);
+         const client = await this.pool.connect();
+         try
+         {
+            await client.query("BEGIN");
+            await deleteFunc(client);
+            await client.query("COMMIT");
+         }
+         catch(err)
+         {
+            await client.query("ROLLBACK");
+            return Promise.reject(err);
+         }
+         finally
+         {
+            client.release();
+         }
       }
    }
 
