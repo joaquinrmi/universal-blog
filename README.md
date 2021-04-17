@@ -1,5 +1,7 @@
 # Universal Blog
 
+**Importante: este proyecto se encuentra aún en desarrollo.**
+
 ![Universal Blog](https://user-images.githubusercontent.com/28006144/114746149-c9cdf180-9d25-11eb-8fbe-dd39e14802c7.png)
 
 Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
@@ -132,6 +134,24 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 {
    "postId": "string"
 }
+```
+
+#### `/post/delete`
+
+**Descripción**: Elimina una publicación si el usuario con la sesión actual es el propietario de la misma.
+
+**Método**: `POST`.
+
+**Formulario**:
+```json
+{
+   "postId": "string"
+}
+```
+
+**Respuesta**:
+```json
+{}
 ```
 
 #### `/post/comment`

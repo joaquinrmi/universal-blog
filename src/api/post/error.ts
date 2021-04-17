@@ -6,7 +6,8 @@ enum ErrorType
    InvalidQuery = "invalid_query",
    TheTitleIsAlreadyUsed = "the_title_is_already_used",
    PostDoesNotExist = "post_does_not_exist",
-   UserDoesNotExist = "user_does_not_exist"
+   UserDoesNotExist = "user_does_not_exist",
+   UserIsNotThePostOwner = "user_is_not_the_post_owner"
 }
 
 export default ErrorType;

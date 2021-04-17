@@ -77,6 +77,13 @@ class PostAPI extends Router
    {
       try
       {
+         const user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
+         const post = await req.model.post.searchById(req.deletePostForm.postId, [ "author_id" ]);
+         if(user.id != post.author_id)
+         {
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.UserIsNotThePostOwner));
+         }
+
          await req.model.post.deletePostById(req.model.like, req.model.comment, req.deletePostForm.postId);
       }
       catch(err)
