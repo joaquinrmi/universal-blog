@@ -16,6 +16,7 @@ class PostAPI extends Router
    {
       super([
          new RouteMap(MethodType.Post, "/create", "createPost"),
+         new RouteMap(MethodType.Post, "/delete", "deletePost"),
          new RouteMap(MethodType.Post, "/comment", "createComment"),
          new RouteMap(MethodType.Post, "/like", "like"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
@@ -23,14 +24,16 @@ class PostAPI extends Router
       ]);
 
       this.registerFunction("createPost", this.createPost);
+      this.registerFunction("deletePost", this.deletePost);
       this.registerFunction("createComment", this.createComment);
       this.registerFunction("like", this.like);
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(this.checkSession, [ "/create", "/comment", "/like" ]);
+      this.useMiddleware(this.checkSession, [ "/create", "/delete", "/comment", "/like" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
+      this.useMiddleware(this.checkDeletePostForm, [ "/delete" ]);
       this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
       this.useMiddleware(this.checkLikeForm, [ "/like" ]);
    }
@@ -68,6 +71,21 @@ class PostAPI extends Router
       res.json({
          postId
       });
+   }
+
+   private async deletePost(req: Request, res: Response): Promise<any>
+   {
+      try
+      {
+         await req.model.post.deletePostById(req.model.like, req.model.comment, req.deletePostForm.postId);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      res.json({});
    }
 
    private async createComment(req: Request, res: Response): Promise<any>
@@ -303,6 +321,18 @@ class PostAPI extends Router
       if(!req.postForm.gallery) req.postForm.gallery = [];
       if(!req.postForm.galleryPosition) req.postForm.galleryPosition = [];
       if(!req.postForm.tags) req.postForm.tags = [];
+
+      next();
+   }
+
+   private async checkDeletePostForm(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
+
+      if(!req.body) return exit(ErrorType.InvalidForm);
+      if(typeof req.body.postId != "string") return exit(ErrorType.InvalidForm);
+
+      req.deletePostForm = req.body;
 
       next();
    }

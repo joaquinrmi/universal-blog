@@ -126,15 +126,15 @@ class CommentModel extends BasicModel<CommentDocument>
       }
    }
 
-   async deleteAllPostComments(post: PostDocument, client?: PoolClient): Promise<void>
+   async deleteAllPostComments(postId: string, client?: PoolClient): Promise<void>
    {
       const query = "DELETE FROM comments WHERE post_id = $1;";
 
       try
       {
-         if(client) await client.query(query, [ post.id ]);
-         else if(this.client) await this.client.query(query, [ post.id ]);
-         else await this.pool.query(query, [ post.id ]);
+         if(client) await client.query(query, [ postId ]);
+         else if(this.client) await this.client.query(query, [ postId ]);
+         else await this.pool.query(query, [ postId ]);
       }
       catch(err)
       {

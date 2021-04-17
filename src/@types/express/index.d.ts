@@ -5,6 +5,7 @@ import CommentForm from "../../api/post/comment_form";
 import LikeForm from "../../api/post/like_form";
 import DeleteForm from "../../api/account/delete_form";
 import Model from "../../model";
+import DeletePostForm from "../../api/post/delete_post_form";
 
 declare global
 {
@@ -19,6 +20,7 @@ declare global
       commentForm: CommentForm;
       likeForm: LikeForm;
       deleteForm: DeleteForm;
+      deletePostForm: DeletePostForm;
     }
   }
 }

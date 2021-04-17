@@ -148,6 +148,37 @@ class PostModel extends BasicModel<PostDocument>
       return this.getDocument(res.rows[0]);
    }
 
+   async deletePostById(likeModel: LikeModel, commentModel: CommentModel, postId: string, client?: PoolClient): Promise<void>
+   {
+      const deleteQuery = "DELETE FROM posts WHERE id = $1;";
+
+      try
+      {
+         if(client)
+         {
+            await likeModel.deleteAllPostLikes(postId, client);
+            await commentModel.deleteAllPostComments(postId, client);
+            await client.query(deleteQuery, [ postId ]);
+         }
+         else if(this.client)
+         {
+            await likeModel.deleteAllPostLikes(postId);
+            await commentModel.deleteAllPostComments(postId);
+            await this.client.query(deleteQuery, [ postId ]);
+         }
+         else
+         {
+            await likeModel.deleteAllPostLikes(postId);
+            await commentModel.deleteAllPostComments(postId);
+            await this.pool.query(deleteQuery, [ postId ]);
+         }
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
+
    async deleteAllUserPosts(likeModel: LikeModel, commentModel: CommentModel, user: UserDocument): Promise<void>
    {
       if(!user.id)
@@ -175,10 +206,10 @@ class PostModel extends BasicModel<PostDocument>
          {
             for(let i = 0; i < postRes.rowCount; ++i)
             {
-               const postDoc = this.getDocument(postRes.rows[i])
+               const post = postRes.rows[i];
 
-               await likeModel.deleteAllPostLikes(postDoc);
-               await commentModel.deleteAllPostComments(postDoc);
+               await likeModel.deleteAllPostLikes(post.id);
+               await commentModel.deleteAllPostComments(post.id);
             }
 
             await this.client.query(deleteQuery, [ user.id ]);
@@ -196,10 +227,10 @@ class PostModel extends BasicModel<PostDocument>
 
          for(let i = 0; i < postRes.rowCount; ++i)
          {
-            const postDoc = this.getDocument(postRes.rows[i])
+            const post = postRes.rows[i]
 
-            await likeModel.deleteAllPostLikes(postDoc, client);
-            await commentModel.deleteAllPostComments(postDoc, client);
+            await likeModel.deleteAllPostLikes(post.id, client);
+            await commentModel.deleteAllPostComments(post.id, client);
          }
 
          await client.query(deleteQuery, [ user.id ]);
