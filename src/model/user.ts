@@ -3,6 +3,11 @@ import { encrypt, decrypt } from "../encryption";
 import Skeleton from "./skeleton";
 import BasicModel from "./basic_model";
 import randomWord from "../random_word";
+import BasicUser from "../user/user";
+import Reader from "../user/reader";
+import Moderator from "../user/moderator";
+import Admin from "../user/admin";
+import Author from "../user/author";
 
 export interface User
 {
@@ -28,6 +33,7 @@ export interface UserDocument extends UserSchema
    checkPassword(password: string): boolean;
    registerSession(): Promise<string>;
    checkSession(key: string): boolean;
+   changeRank(rank: number): Promise<void>;
 }
 
 const userSkeleton = new Skeleton<UserDocument>();
@@ -41,6 +47,60 @@ class UserModel extends BasicModel<UserDocument>
       super(pool, userSkeleton);
 
       this.pool = pool;
+   }
+
+   async getUserById(id: number): Promise<BasicUser>
+   {
+      try
+      {
+         var userDocument = await this.searchById(id);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      switch(userDocument.rank)
+      {
+      case 0:
+         return new Reader(userDocument);
+
+      case 1:
+         return new Author(userDocument);
+
+      case 2:
+         return new Moderator(userDocument);
+
+      case 3:
+         return new Admin(userDocument);
+      }
+   }
+
+   async getUserByAliasOrEmail(aliasOrEmail: string): Promise<BasicUser>
+   {
+      try
+      {
+         var userDocument = await this.searchByAliasOrEmail(aliasOrEmail);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      switch(userDocument.rank)
+      {
+      case 0:
+         return new Reader(userDocument);
+
+      case 1:
+         return new Author(userDocument);
+
+      case 2:
+         return new Moderator(userDocument);
+
+      case 3:
+         return new Admin(userDocument);
+      }
    }
 
    async searchById(id: number, props?: Array<string>): Promise<UserDocument>
@@ -184,6 +244,30 @@ userSkeleton.methods.checkSession = function(this: UserDocument, key: string): b
 {
    if(!this.session_keys) return false;
    return this.session_keys.indexOf(key) != -1;
+}
+
+userSkeleton.methods.changeRank = async function(this: UserDocument, rank: number): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("propery 'id' is undefined");
+   }
+
+   if(!this.rank)
+   {
+      return Promise.reject("property 'rank' is undefined");
+   }
+
+   try
+   {
+      await this.pool.query("UPDATE users SET rank = $2 WHERE id = $1;", [ this.id, rank ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+
+   this.rank = rank;
 }
 
 export default UserModel;
