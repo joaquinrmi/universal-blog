@@ -9,6 +9,7 @@ import { UserDocument } from "../../model/user";
 import { Comment } from "../../model/comment";
 import { Like } from "../../model/like";
 import useModel from "../use_model";
+import UserErrorCode from "../../user/error_code";
 
 class PostAPI extends Router
 {
@@ -54,11 +55,16 @@ class PostAPI extends Router
 
       try
       {
-         var user = await req.model.user.searchByAliasOrEmail(req.session["alias"]);
-         var postId = await req.model.post.createPost(user, postData);
+         var user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
+         var postId = await user.createPost(req.model, postData);
       }
       catch(err)
       {
+         if(err == UserErrorCode.InsufficientPermissions)
+         {
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+         }
+
          console.error(err);
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
@@ -77,17 +83,20 @@ class PostAPI extends Router
    {
       try
       {
-         const user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-         const post = await req.model.post.searchById(req.deletePostForm.postId, [ "author_id" ]);
-         if(user.id != post.author_id)
-         {
-            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.UserIsNotThePostOwner));
-         }
-
-         await req.model.post.deletePostById(req.model.like, req.model.comment, req.deletePostForm.postId);
+         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
+         await user.deletePost(req.model, req.deletePostForm.postId);
       }
       catch(err)
       {
+         switch(err)
+         {
+         case UserErrorCode.PostNotFound:
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+
+         case UserErrorCode.InsufficientPermissions:
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+         }
+
          console.error(err);
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
@@ -99,20 +108,28 @@ class PostAPI extends Router
    {
       try
       {
-         const user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-         const post = await req.model.post.searchById(req.commentForm.postId, [ "id", "comment_count" ]);
+         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
 
          const comment: Comment = {
-            author_id: user.id,
-            post_id: post.id,
+            author_id: user.document.id,
+            post_id: req.commentForm.postId,
             content: req.commentForm.content,
             date_created: new Date()
          };
 
-         await req.model.comment.registerComment(comment, post);
+         await user.comment(req.model, req.commentForm.postId, comment);
       }
       catch(err)
       {
+         switch(err)
+         {
+         case UserErrorCode.PostNotFound:
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+
+         case UserErrorCode.InsufficientPermissions:
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+         }
+
          console.error(err);
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
@@ -124,18 +141,26 @@ class PostAPI extends Router
    {
       try
       {
-         const user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-         const post = await req.model.post.searchById(req.likeForm.postId, [ "id", "like_count" ]);
+         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
 
          const like: Like = {
-            author_id: user.id,
+            author_id: user.document.id,
             post_id: req.likeForm.postId
          };
 
-         await req.model.like.registerLike(like, post);
+         await user.like(req.model, req.likeForm.postId, like);
       }
       catch(err)
       {
+         switch(err)
+         {
+         case UserErrorCode.PostNotFound:
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+
+         case UserErrorCode.InsufficientPermissions:
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+         }
+
          console.error(err);
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
