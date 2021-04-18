@@ -53,7 +53,7 @@ class AccountAPI extends Router
 
       const user: User = {
          ...req.signupForm,
-         rank: 0,
+         rank: Number(process.env.DEFAULT_RANK),
          date_join: new Date()
       };
 
