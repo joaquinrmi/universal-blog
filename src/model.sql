@@ -6,7 +6,7 @@ CREATE TABLE users
 	surname varchar(32),
 	alias varchar(16) UNIQUE NOT NULL,
 	email varchar(255) UNIQUE NOT NULL,
-	class int,
+	rank int,
 	date_join date,
 	session_keys varchar(8)[] DEFAULT ARRAY[]::VARCHAR(8)[]
 );

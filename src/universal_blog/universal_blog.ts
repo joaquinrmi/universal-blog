@@ -5,6 +5,7 @@ import * as session from "express-session";
 import * as cookieParser from "cookie-parser";
 import * as multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import serverInit from "../server_init";
 
 import AccountAPI from "../api/account/";
 import PostAPI from "../api/post/";
@@ -57,8 +58,21 @@ class UniversalBlog
       this.app.use("/api/upload", this.uploadAPI.use());
    }
 
-   start()
+   async start()
    {
+      try
+      {
+         await serverInit();
+      }
+      catch(err)
+      {
+         if(err.code != "42P07")
+         {
+            console.error(err);
+            return Promise.reject(err);
+         }
+      }
+
       this.app.listen(this.app.get("port"), () => {
          console.log(`Server on port ${this.app.get("port")}.`);
       });
