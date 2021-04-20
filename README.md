@@ -22,6 +22,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
         * [`/post/create`](https://github.com/joaquinrmi/universal-blog#postcreate)
         * [`/post/delete`](https://github.com/joaquinrmi/universal-blog#postdelete)
         * [`/post/comment`](https://github.com/joaquinrmi/universal-blog#postcomment)
+        * [`/post/delete-comment`](https://github.com/joaquinrmi/universal-blog#postdelete-comment)
         * [`/post/like`](https://github.com/joaquinrmi/universal-blog#postlike)
         * [`/post/get-single`](https://github.com/joaquinrmi/universal-blog#postget-single)
         * [`/post/get-list`](https://github.com/joaquinrmi/universal-blog#postget-list)
@@ -62,7 +63,7 @@ Estos usuarios pueden **crear publicaciones** y administrarlas, además de reali
 
 ### Moderador (moderator)
 
-Pueden realizar las mismas acciones que un autor y además son capaces de **eliminar publicaciones** de cualquier otro usuario. *Aclaración: próximamente, los administradores serán capaces de editar cualquier publicación, eliminar comentarios y bloquear otras cuentas de usuario*.
+Pueden realizar las mismas acciones que un autor y además son capaces de **eliminar publicaciones y comentarios** de cualquier otro usuario. *Aclaración: próximamente, los administradores serán capaces de editar cualquier publicación y bloquear otras cuentas de usuario*.
 
 ### Administrador (admin)
 
@@ -216,6 +217,24 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 {
    "postId": "string",
    "content": [ "string" ]
+}
+```
+
+**Respuesta**:
+```json
+{}
+```
+
+#### `/post/delete-comment`
+
+**Descripción**: Elimina un comentario según su `id`.
+
+**Método**: `POST`.
+
+**Formulario**:
+```json
+{
+   "id": "number"
 }
 ```
 
