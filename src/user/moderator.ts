@@ -20,6 +20,24 @@ class Moderator extends Author
          return Promise.reject(err);
       }
    }
+
+   async deleteOneComment(model: Model, commentId: number): Promise<void>
+   {
+      try
+      {
+         var comment = await model.comment.searchById(commentId, [ "post_id" ]);
+         var post = await model.post.searchById(comment.post_id, [ "id", "comment_count" ]);
+
+         await model.beginTransaction();
+         await model.comment.deleteById(commentId);
+         await post.removeComment();
+         await model.endTransaction();
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
 }
 
 export default Moderator;

@@ -26,9 +26,45 @@ const commentSkeleton = new Skeleton<CommentDocument>();
 
 class CommentModel extends BasicModel<CommentDocument>
 {
+   props: [ "id", "author_id", "post_id", "content", "date_created" ];
+
    constructor(pool: Pool)
    {
       super(pool, commentSkeleton);
+   }
+
+   async searchById(id: number, props?: Array<string>): Promise<CommentDocument>
+   {
+      if(!props) props = this.props;
+
+      const searchQuery = `SELECT ${props.join(", ")} FROM comments WHERE id = $1;`;
+
+      try
+      {
+         if(this.client) var res = await this.client.query(searchQuery, [ id ]);
+         else var res = await this.pool.query(searchQuery, [ id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
+   }
+
+   async deleteById(id: number): Promise<void>
+   {
+      const deleteQuery = `DELETE FROM comments WHERE id = $1;`;
+
+      try
+      {
+         if(this.client) await this.client.query(deleteQuery, [ id ]);
+         else await this.pool.query(deleteQuery, [ id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
    }
 
    async registerComment(comment: Comment, post: PostDocument): Promise<void>

@@ -3,7 +3,6 @@ import { UserDocument } from "../model/user";
 import ErrorCode from "./error_code";
 import { Post } from "../model/post";
 import { Comment } from "../model/comment";
-import ErrorType from "../api/post/error";
 import { Like } from "../model/like";
 
 class BasicUser
@@ -56,6 +55,38 @@ class BasicUser
    }
 
    async comment(model: Model, postId: string, comment: Comment): Promise<void>
+   {
+      return Promise.reject(ErrorCode.InsufficientPermissions);
+   }
+
+   async deleteComment(model: Model, commentId: number): Promise<void>
+   {
+      try
+      {
+         var comment = await model.comment.searchById(commentId, [ "author_id" ]);
+         if(!comment)
+         {
+            return Promise.reject(ErrorCode.CommentNotFound);
+         }
+
+         if(comment.author_id == this.document.id)
+         {
+            await this.deleteOwnComment(model, commentId);
+         }
+         else await this.deleteOneComment(model, commentId);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
+
+   protected async deleteOwnComment(model: Model, commentId: number): Promise<void>
+   {
+      return Promise.reject(ErrorCode.InsufficientPermissions);
+   }
+
+   protected async deleteOneComment(model: Model, commentId: number): Promise<void>
    {
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }

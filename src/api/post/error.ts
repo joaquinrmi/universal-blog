@@ -8,7 +8,8 @@ enum ErrorType
    PostDoesNotExist = "post_does_not_exist",
    UserDoesNotExist = "user_does_not_exist",
    UserIsNotThePostOwner = "user_is_not_the_post_owner",
-   InsufficientPermissions = "insufficient_permissions"
+   InsufficientPermissions = "insufficient_permissions",
+   CommentDoesNotExist = "comment_does_not_exist"
 }
 
 export default ErrorType;

@@ -19,6 +19,7 @@ class PostAPI extends Router
          new RouteMap(MethodType.Post, "/create", "createPost"),
          new RouteMap(MethodType.Post, "/delete", "deletePost"),
          new RouteMap(MethodType.Post, "/comment", "createComment"),
+         new RouteMap(MethodType.Post, "/delete-comment", "deleteComment"),
          new RouteMap(MethodType.Post, "/like", "like"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
          new RouteMap(MethodType.Get, "/get-list", "searchPosts")
@@ -27,15 +28,17 @@ class PostAPI extends Router
       this.registerFunction("createPost", this.createPost);
       this.registerFunction("deletePost", this.deletePost);
       this.registerFunction("createComment", this.createComment);
+      this.registerFunction("deleteComment", this.deleteComment);
       this.registerFunction("like", this.like);
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(this.checkSession, [ "/create", "/delete", "/comment", "/like" ]);
+      this.useMiddleware(this.checkSession, [ "/create", "/delete", "/comment", "/delete-comment", "/like" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
       this.useMiddleware(this.checkDeletePostForm, [ "/delete" ]);
       this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
+      this.useMiddleware(this.checkDeleteCommentForm, [ "/delete-comment" ]);
       this.useMiddleware(this.checkLikeForm, [ "/like" ]);
    }
 
@@ -134,7 +137,32 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      return res.json({});
+      res.json({});
+   }
+
+   private async deleteComment(req: Request, res: Response): Promise<any>
+   {
+      try
+      {
+         var user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
+         await user.deleteComment(req.model, req.deleteCommentForm.id);
+      }
+      catch(err)
+      {
+         switch(err)
+         {
+         case UserErrorCode.CommentNotFound:
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.CommentDoesNotExist));
+
+         case UserErrorCode.InsufficientPermissions:
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+         }
+
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      res.json({});
    }
 
    private async like(req: Request, res: Response): Promise<any>
@@ -378,6 +406,18 @@ class PostAPI extends Router
       if(!Array.isArray(req.body.content)) return exit(ErrorType.InvalidForm);
 
       req.commentForm = req.body;
+
+      next();
+   }
+
+   private async checkDeleteCommentForm(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
+
+      if(!req.body) return exit(ErrorType.InvalidForm);
+      if(typeof req.body.id != "number") return exit(ErrorType.InvalidForm);
+
+      req.deleteCommentForm = req.body;
 
       next();
    }
