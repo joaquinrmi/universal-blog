@@ -1,7 +1,8 @@
 export enum MethodType
 {
    Get = "get",
-   Post = "post"
+   Post = "post",
+   Delete = "delete"
 }
 
 class RouteMap
