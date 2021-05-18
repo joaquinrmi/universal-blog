@@ -4,6 +4,7 @@ import RouteMap, { MethodType } from "../router/route_map";
 import StatusCode from "../status_code";
 import ErrorResponse from "../error_response";
 import ErrorType from "./error";
+import { User } from "../../model/user";
 import useModel from "../use_model";
 
 class AccountAPI extends Router
