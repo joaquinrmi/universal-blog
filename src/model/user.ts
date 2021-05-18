@@ -32,6 +32,7 @@ export interface UserDocument extends UserSchema
 
    checkPassword(password: string): boolean;
    registerSession(): Promise<string>;
+   eraseSession(key: string): Promise<void>;
    checkSession(key: string): boolean;
    changeRank(rank: number): Promise<void>;
 }
@@ -238,6 +239,36 @@ userSkeleton.methods.registerSession = async function(this: UserDocument): Promi
    }
 
    return key;
+}
+
+userSkeleton.methods.eraseSession = async function(this: UserDocument, key: string): Promise<void>
+{
+   if(!this.session_keys)
+   {
+      return Promise.reject(new Error("field 'session_keys' is undefined"));
+   }
+
+   if(!this.id)
+   {
+      return Promise.reject(new Error("field 'id' is undefined"));
+   }
+
+   const index = this.session_keys.indexOf(key);
+   if(index == -1)
+   {
+      return;
+   }
+
+   this.session_keys.splice(index, 1);
+
+   try
+   {
+      await this.pool.query(`UPDATE users SET session_keys = $2 WHERE id = $1;`, [ this.id, this.session_keys ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
 }
 
 userSkeleton.methods.checkSession = function(this: UserDocument, key: string): boolean
