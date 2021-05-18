@@ -4,7 +4,6 @@ import RouteMap, { MethodType } from "../router/route_map";
 import StatusCode from "../status_code";
 import ErrorResponse from "../error_response";
 import ErrorType from "./error";
-import { User } from "../../model/user";
 import useModel from "../use_model";
 
 class AccountAPI extends Router
@@ -13,21 +12,23 @@ class AccountAPI extends Router
    {
       super([
          new RouteMap(MethodType.Post, "/create", "createAccount"),
-         new RouteMap(MethodType.Post, "/delete", "deleteAccount"),
+         new RouteMap(MethodType.Delete, "/delete", "deleteAccount"),
          new RouteMap(MethodType.Post, "/login", "login"),
+         new RouteMap(MethodType.Post, "/logout", "logout"),
          new RouteMap(MethodType.Post, "/restore-session", "restoreSession"),
       ]);
 
       this.registerFunction("createAccount", this.createAccount);
       this.registerFunction("deleteAccount", this.deleteAccount);
       this.registerFunction("login", this.login);
+      this.registerFunction("logout", this.logout);
       this.registerFunction("restoreSession", this.restoreSession);
 
       this.useMiddleware(useModel);
       this.useMiddleware(this.checkSignupForm, [ "/create" ]);
       this.useMiddleware(this.restoreSessionMid, [ "/login", "/restore-session"]);
       this.useMiddleware(this.checkLoginForm, [ "/login" ]);
-      this.useMiddleware(this.checkSession, [ "/delete" ]);
+      this.useMiddleware(this.checkSession, [ "/delete", "/logout" ]);
       this.useMiddleware(this.checkDeleteForm, [ "/delete" ]);
    }
 
@@ -149,6 +150,27 @@ class AccountAPI extends Router
       res.json({
          alias: user.alias
       });
+   }
+
+   private async logout(req: Request, res: Response): Promise<any>
+   {
+      if(!req.cookies["user"] || !req.cookies["user"].key)
+      {
+         return res.json();
+      }
+
+      try
+      {
+         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
+
+         await user.document.eraseSession(req.cookies["user"].key);
+      }
+      catch(err)
+      {
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      res.json();
    }
 
    private async restoreSession(req: Request, res: Response): Promise<any>
