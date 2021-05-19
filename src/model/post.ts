@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from "pg";
-import { encrypt } from "../encryption";
+import { encryptSHA256 } from "../encryption";
 import Skeleton from "./skeleton";
 import BasicModel from "./basic_model";
 import { UserDocument } from "./user";
@@ -69,7 +69,7 @@ class PostModel extends BasicModel<PostDocument>
          return null;
       }
 
-      const id = encrypt(`${user.alias}-${post.title}`, process.env.TITLE_ENCRYPT_SECRET);
+      const id = encryptSHA256(`${user.alias}-${post.title}`);
       try
       {
          await this.pool.query("INSERT INTO posts (id, author_id, title, content, cover, gallery, gallery_position, tags, comment_count, like_count, date_created) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);", [ id, user.id, post.title, post.content, post.cover, post.gallery, post.gallery_position, post.tags, 0, 0, post.date_created ]);
