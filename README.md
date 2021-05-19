@@ -40,7 +40,6 @@ Para el funcionamiento de la aplicación, habrá que establecer previamente las 
 * `DEFAULT_RANK`: rango por defecto que se le asignará a los usuarios que se creen una nueva cuenta; debe ser un número entre 0 y 3, inclusive.
 * `SESSION_SECRET`: es el *secret* utilizado por `express-session`.
 * `ENCRYPT_SECRET`: es la clave que se usará para encriptar las contraseñas.
-* `TITLE_ENCRYPT_SECRET`: es la clave que se usará para encriptar los títulos de las publicaciones, con el fin de generar un identificador.
 * `PGHOST`, `PGUSER`, `PGDATABASE`, `PGPASSWORD` y `PGPORT`: son los parámetros de conexión con la base de datos de **PostgreSQL**.
 * `CLOUD_NAME`, `CLOUD_API_KEY` y `CLOUD_API_SECRET`: son los parámetros de conexión con el servidor de **Cloudinary**.
 
