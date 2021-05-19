@@ -67,7 +67,7 @@ class CommentModel extends BasicModel<CommentDocument>
       }
    }
 
-   async registerComment(comment: Comment, post: PostDocument): Promise<void>
+   async registerComment(comment: Comment, post: PostDocument): Promise<number>
    {
       if(post.id != comment.post_id)
       {
@@ -78,7 +78,7 @@ class CommentModel extends BasicModel<CommentDocument>
       try
       {
          await client.query("BEGIN");
-         await client.query(`INSERT INTO comments (author_id, post_id, content, date_created) VALUES ($1, $2, $3, $4);`, [ comment.author_id, comment.post_id, comment.content, comment.date_created ]);
+         var res = await client.query(`INSERT INTO comments (author_id, post_id, content, date_created) VALUES ($1, $2, $3, $4);`, [ comment.author_id, comment.post_id, comment.content, comment.date_created ]);
          await post.addComment(client);
          await client.query("COMMIT");
       }
@@ -91,6 +91,8 @@ class CommentModel extends BasicModel<CommentDocument>
       {
          client.release();
       }
+
+      return res.rows[0].id;
    }
 
    async deleteAllUserComments(postModel: PostModel, user: UserDocument): Promise<void>
