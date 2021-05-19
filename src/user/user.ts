@@ -54,7 +54,7 @@ class BasicUser
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }
 
-   async comment(model: Model, postId: string, comment: Comment): Promise<void>
+   async comment(model: Model, postId: string, comment: Comment): Promise<number>
    {
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }

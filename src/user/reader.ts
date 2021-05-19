@@ -12,7 +12,7 @@ class Reader extends BasicUser
       super(document);
    }
 
-   async comment(model: Model, postId: string, comment: Comment): Promise<void>
+   async comment(model: Model, postId: string, comment: Comment): Promise<number>
    {
       try
       {
@@ -22,12 +22,14 @@ class Reader extends BasicUser
             return Promise.reject(ErrorCode.PostNotFound);
          }
 
-         await model.comment.registerComment(comment, post);
+         var id = await model.comment.registerComment(comment, post);
       }
       catch(err)
       {
          return Promise.reject(err);
       }
+
+      return id;
    }
 
    async deleteOwnComment(model: Model, commentId: number): Promise<void>
