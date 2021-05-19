@@ -77,7 +77,7 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      res.json({
+      res.status(StatusCode.Created).json({
          postId
       });
    }
@@ -104,7 +104,7 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      res.json({});
+      res.status(StatusCode.OK).json();
    }
 
    private async createComment(req: Request, res: Response): Promise<any>
@@ -137,7 +137,7 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      res.json({});
+      res.status(StatusCode.Created).json();
    }
 
    private async deleteComment(req: Request, res: Response): Promise<any>
@@ -162,7 +162,7 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      res.json({});
+      res.status(StatusCode.OK).json();
    }
 
    private async like(req: Request, res: Response): Promise<any>
@@ -193,7 +193,7 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      return res.json({});
+      return res.status(StatusCode.Created).json();
    }
 
    private async getPost(req: Request, res: Response): Promise<any>
@@ -219,7 +219,7 @@ class PostAPI extends Router
          return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
       }
       
-      res.json({
+      res.status(StatusCode.OK).json({
          title: post.title,
          content: post.content,
          cover: post.cover,
@@ -334,7 +334,7 @@ class PostAPI extends Router
          };
       }
 
-      res.json(result);
+      res.status(StatusCode.OK).json(result);
    }
 
    private async checkCreatePostForm(req: Request, res: Response, next: NextFunction): Promise<any>
