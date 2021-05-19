@@ -120,7 +120,7 @@ class PostAPI extends Router
             date_created: new Date()
          };
 
-         await user.comment(req.model, req.commentForm.postId, comment);
+         var commentId = await user.comment(req.model, req.commentForm.postId, comment);
       }
       catch(err)
       {
@@ -137,7 +137,9 @@ class PostAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
-      res.status(StatusCode.Created).json();
+      res.status(StatusCode.Created).json({
+         commentId
+      });
    }
 
    private async deleteComment(req: Request, res: Response): Promise<any>
