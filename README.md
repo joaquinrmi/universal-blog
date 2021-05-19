@@ -17,6 +17,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
         * [`/account/create`](https://github.com/joaquinrmi/universal-blog#accountcreate)
         * [`/account/delete`](https://github.com/joaquinrmi/universal-blog#accountdelete)
         * [`/account/login`](https://github.com/joaquinrmi/universal-blog#accountlogin)
+        * [`/account/logout](https://github.com/joaquinrmi/universal-blog#accountlogout)
         * [`/account/restore-session`](https://github.com/joaquinrmi/universal-blog#accountrestore-session)
     + [Post API](https://github.com/joaquinrmi/universal-blog#post-api)
         * [`/post/create`](https://github.com/joaquinrmi/universal-blog#postcreate)
@@ -63,7 +64,7 @@ Estos usuarios pueden **crear publicaciones** y administrarlas, además de reali
 
 ### Moderador (moderator)
 
-Pueden realizar las mismas acciones que un autor y además son capaces de **eliminar publicaciones y comentarios** de cualquier otro usuario. *Aclaración: próximamente, los administradores serán capaces de editar cualquier publicación y bloquear otras cuentas de usuario*.
+Pueden realizar las mismas acciones que un autor y además son capaces de **eliminar publicaciones y comentarios** de cualquier otro usuario.
 
 ### Administrador (admin)
 
@@ -142,6 +143,16 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
    "alias": "string"
 }
 ```
+
+#### `/account/logout`
+
+**Descripción**: Termina la sesión actual, si existe.
+
+**Método**: `POST`.
+
+**Formulario**: `null`.
+
+**Respuesta**: `null`.
 
 #### `/account/restore-session`
 
