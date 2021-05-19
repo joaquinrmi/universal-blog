@@ -171,6 +171,11 @@ class AccountAPI extends Router
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
       }
 
+      req.session["alias"] = null;
+      req.session.save();
+
+      res.cookie("user", null);
+
       res.json();
    }
 
