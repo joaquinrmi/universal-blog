@@ -22,7 +22,8 @@ class PostAPI extends Router
          new RouteMap(MethodType.Post, "/delete-comment", "deleteComment"),
          new RouteMap(MethodType.Post, "/like", "like"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
-         new RouteMap(MethodType.Get, "/get-list", "searchPosts")
+         new RouteMap(MethodType.Get, "/get-list", "searchPosts"),
+         new RouteMap(MethodType.Get, "/get-comment", "getComment")
       ]);
 
       this.registerFunction("createPost", this.createPost);
@@ -32,6 +33,7 @@ class PostAPI extends Router
       this.registerFunction("like", this.like);
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
+      this.registerFunction("getComment", this.getComment);
 
       this.useMiddleware(useModel);
       this.useMiddleware(this.checkSession, [ "/create", "/delete", "/comment", "/delete-comment", "/like" ]);
@@ -337,6 +339,31 @@ class PostAPI extends Router
       }
 
       res.status(StatusCode.OK).json(result);
+   }
+
+   private async getComment(req: Request, res: Response): Promise<any>
+   {
+      if(!req.query["id"])
+      {
+         return res.status(StatusCode.BadRequest).json(new ErrorResponse(ErrorType.InvalidQuery));
+      }
+
+      try
+      {
+         var comment = await req.model.comment.searchById(Number(req.query["id"]));
+      }
+      catch(err)
+      {
+         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+      }
+
+      res.status(StatusCode.OK).json({
+         id: comment.id,
+         authorId: comment.author_id,
+         postId: comment.post_id,
+         content: comment.content,
+         dateCreated: comment.date_created.getTime()
+      });
    }
 
    private async checkCreatePostForm(req: Request, res: Response, next: NextFunction): Promise<any>
