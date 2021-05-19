@@ -1,7 +1,5 @@
 # Universal Blog
 
-**Importante: este proyecto se encuentra aún en desarrollo.**
-
 ![Universal Blog](https://user-images.githubusercontent.com/28006144/114746149-c9cdf180-9d25-11eb-8fbe-dd39e14802c7.png)
 
 Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
@@ -17,7 +15,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
         * [`/account/create`](https://github.com/joaquinrmi/universal-blog#accountcreate)
         * [`/account/delete`](https://github.com/joaquinrmi/universal-blog#accountdelete)
         * [`/account/login`](https://github.com/joaquinrmi/universal-blog#accountlogin)
-        * [`/account/logout](https://github.com/joaquinrmi/universal-blog#accountlogout)
+        * [`/account/logout`](https://github.com/joaquinrmi/universal-blog#accountlogout)
         * [`/account/restore-session`](https://github.com/joaquinrmi/universal-blog#accountrestore-session)
     + [Post API](https://github.com/joaquinrmi/universal-blog#post-api)
         * [`/post/create`](https://github.com/joaquinrmi/universal-blog#postcreate)
@@ -109,7 +107,7 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 
 **Descripción**: Elimina la cuenta del usuario con la sesión actual.
 
-**Método**: `POST`.
+**Método**: `DELETE`.
 
 **Formulario**:
 ```json
@@ -150,9 +148,9 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 
 **Método**: `POST`.
 
-**Formulario**: `null`.
+**Formulario**: `undefined`.
 
-**Respuesta**: `null`.
+**Respuesta**: `undefined`.
 
 #### `/account/restore-session`
 
