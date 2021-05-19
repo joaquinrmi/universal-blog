@@ -1,5 +1,7 @@
 enum StatusCode
 {
+   Created = 201,
+   OK = 200,
    BadRequest = 400,
    Unauthorized = 401,
    Forbidden = 403,
