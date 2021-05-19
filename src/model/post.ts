@@ -7,6 +7,11 @@ import BasicQuery from "./basic_query";
 import LikeModel from "./like";
 import CommentModel from "./comment";
 
+export enum PostErrorCode
+{
+   TitleAlreadyUsed = "title_already_used"
+}
+
 export interface Post
 {
    title: string;
@@ -57,16 +62,15 @@ class PostModel extends BasicModel<PostDocument>
    {
       try
       {
-         var postFound = await this.searchOneByTitle(post.title, user, [ "id" ]);
+         const postFound = await this.searchOneByTitle(post.title, user, [ "id" ]);
+         if(postFound)
+         {
+            return Promise.reject(PostErrorCode.TitleAlreadyUsed);
+         }
       }
       catch(err)
       {
          return Promise.reject(err);
-      }
-
-      if(postFound)
-      {
-         return null;
       }
 
       const id = encryptSHA256(`${user.alias}-${post.title}`);
