@@ -3,7 +3,7 @@ import Router from "../router/";
 import RouteMap, { MethodType } from "../router/route_map";
 import StatusCode from "../status_code";
 import ErrorResponse from "../error_response";
-import { Post, SearchPostQuery } from "../../model/post";
+import { Post, SearchPostQuery, PostErrorCode } from "../../model/post";
 import ErrorType from "./error";
 import { UserDocument } from "../../model/user";
 import { Comment } from "../../model/comment";
@@ -68,13 +68,13 @@ class PostAPI extends Router
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
          }
 
+         if(err == PostErrorCode.TitleAlreadyUsed)
+         {
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.TheTitleIsAlreadyUsed));
+         }
+
          console.error(err);
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
-      }
-
-      if(!postId)
-      {
-         return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.TheTitleIsAlreadyUsed));
       }
 
       res.json({
