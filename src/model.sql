@@ -42,3 +42,11 @@ CREATE TABLE likes
 	author_id int references users(id),
 	post_id text references posts(id)
 );
+
+CREATE TABLE banishments
+(
+	email varchar(255) PRIMARY KEY,
+	reason text,
+	date timestamp NOT NULL,
+	judge int references users(id)
+);
