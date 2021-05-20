@@ -1,6 +1,7 @@
 import BasicModel from "./basic_model";
 import { Pool } from "pg";
 import Skeleton from "./skeleton";
+import { UserDocument } from "./user";
 
 export interface Banishment
 {
@@ -52,6 +53,25 @@ class BanishmentModel extends BasicModel<BanishmentDocument>
       }
 
       return res.rowCount == 0;
+   }
+
+   async registerBanished(judge: UserDocument, email: string, reason?: string): Promise<boolean>
+   {
+      if(!this.checkEmailAvailability(email)) return false;
+
+      if(reason == undefined) reason = "";
+      const date = new Date();
+
+      try
+      {
+         await this.pool.query(`INSERT INTO banishments (email, reason, date, judge) VALUES ($1, $2, $3, $4);`, [ email, reason, date, judge.id ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return true;
    }
 }
 
