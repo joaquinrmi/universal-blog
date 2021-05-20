@@ -19,9 +19,25 @@ const banishmentSkeleton = new Skeleton<BanishmentDocument>();
 
 class BanishmentModel extends BasicModel<BanishmentDocument>
 {
+   private props = [ "email", "reason", "date", "judge" ];
+
    constructor(pool: Pool)
    {
       super(pool, banishmentSkeleton);
+   }
+
+   async searchByEmail(email: string): Promise<BanishmentDocument>
+   {
+      try
+      {
+         var res = await this.pool.query(`SELECT ${this.props.join(",")} FROM banishments WHERE email = $1;`, [ email ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
    }
 
    async checkEmailAvailability(email: string): Promise<boolean>
