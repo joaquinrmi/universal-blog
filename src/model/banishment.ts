@@ -23,6 +23,20 @@ class BanishmentModel extends BasicModel<BanishmentDocument>
    {
       super(pool, banishmentSkeleton);
    }
+
+   async checkEmailAvailability(email: string): Promise<boolean>
+   {
+      try
+      {
+         var res = await this.pool.query(`SELECT email FROM banishments WHERE email = $1;`, [ email ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return res.rowCount == 0;
+   }
 }
 
 export default BanishmentModel;
