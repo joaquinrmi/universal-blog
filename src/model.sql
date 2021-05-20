@@ -1,6 +1,7 @@
 CREATE TABLE users
 (
 	id serial PRIMARY KEY,
+	banished boolean DEFAULT FALSE,
 	password varchar(88) NOT NULL,
 	name varchar(32),
 	surname varchar(32),
