@@ -23,6 +23,7 @@ export interface User
 export interface UserSchema extends User
 {
    id: number;
+   banished: boolean;
    session_keys: Array<string>;
 }
 
@@ -41,7 +42,7 @@ const userSkeleton = new Skeleton<UserDocument>();
 
 class UserModel extends BasicModel<UserDocument>
 {
-   private props = [ "id", "password", "name", "surname", "alias", "email", "rank", "date_join", "session_keys" ];
+   private props = [ "id", "banished", "password", "name", "surname", "alias", "email", "rank", "date_join", "session_keys" ];
 
    constructor(pool: Pool)
    {
