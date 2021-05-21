@@ -57,7 +57,7 @@ class BanishmentModel extends BasicModel<BanishmentDocument>
 
    async registerBanished(judge: UserDocument, email: string, reason?: string): Promise<boolean>
    {
-      if(!this.checkEmailAvailability(email)) return false;
+      if(!await this.checkEmailAvailability(email)) return false;
 
       if(reason == undefined) reason = "";
       const date = new Date();
