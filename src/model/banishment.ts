@@ -73,6 +73,18 @@ class BanishmentModel extends BasicModel<BanishmentDocument>
 
       return true;
    }
+
+   async removeBanishment(email: string): Promise<void>
+   {
+      try
+      {
+         await this.pool.query(`DELETE FROM banishments WHERE email = $1;`, [ email ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
 }
 
 export default BanishmentModel;
