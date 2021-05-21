@@ -36,6 +36,7 @@ export interface UserDocument extends UserSchema
    eraseSession(key: string): Promise<void>;
    checkSession(key: string): boolean;
    changeRank(rank: number): Promise<void>;
+   banish(): Promise<void>;
 }
 
 const userSkeleton = new Skeleton<UserDocument>();
@@ -300,6 +301,25 @@ userSkeleton.methods.changeRank = async function(this: UserDocument, rank: numbe
    }
 
    this.rank = rank;
+}
+
+userSkeleton.methods.banish = async function(this: UserDocument): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("propery 'id' is undefined");
+   }
+
+   try
+   {
+      await this.pool.query(`UPDATE users SET banished = $2 WHERE id = $1;`, [ this.id, true ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+
+   this.banished = true;
 }
 
 export default UserModel;
