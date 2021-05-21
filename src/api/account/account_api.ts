@@ -46,6 +46,11 @@ class AccountAPI extends Router
          {
             return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.EmailIsAlreadyUsed));
          }
+
+         if(!await req.model.banishment.checkEmailAvailability(req.signupForm.email))
+         {
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.EmailIsBanned));
+         }
       }
       catch(err)
       {
