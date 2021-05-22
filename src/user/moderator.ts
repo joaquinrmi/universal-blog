@@ -44,20 +44,20 @@ class Moderator extends Author
    {
       try
       {
-         const targetUser = await model.user.getUserByAliasOrEmail(aliasOrEmail);
+         const targetUser = await model.user.searchByAliasOrEmail(aliasOrEmail);
          if(!targetUser)
          {
             return Promise.reject(ErrorCode.UserNotFound);
          }
 
-         if(targetUser.document.rank >= this.document.rank)
+         if(targetUser.rank >= this.document.rank)
          {
             return Promise.reject(ErrorCode.InsufficientPermissions);
          }
 
          await model.beginTransaction();
-         await targetUser.document.banish();
-         await model.banishment.registerBanished(this.document, targetUser.document.email, reason);
+         await targetUser.banish();
+         await model.banishment.registerBanished(this.document, targetUser.email, reason);
          await model.endTransaction();
       }
       catch(err)
