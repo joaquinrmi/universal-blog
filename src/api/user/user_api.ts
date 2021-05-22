@@ -17,6 +17,7 @@ class UserAPI extends Router
       ]);
 
       this.registerFunction("promoteUser", this.promoteUser);
+      this.registerFunction("banishUser", this.banishUser);
 
       this.useMiddleware(useModel);
       this.useMiddleware(this.checkSession, [ "/promoteUser", "/banish" ]);
