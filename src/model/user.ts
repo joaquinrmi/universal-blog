@@ -37,6 +37,7 @@ export interface UserDocument extends UserSchema
    checkSession(key: string): boolean;
    changeRank(rank: number): Promise<void>;
    banish(): Promise<void>;
+   breakBanishment(): Promise<void>;
 }
 
 const userSkeleton = new Skeleton<UserDocument>();
@@ -320,6 +321,25 @@ userSkeleton.methods.banish = async function(this: UserDocument): Promise<void>
    }
 
    this.banished = true;
+}
+
+userSkeleton.methods.breakBanishment = async function(this: UserDocument): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("propery 'id' is undefined");
+   }
+
+   try
+   {
+      await this.pool.query(`UPDATE users SET banished = $2 WHERE id = $1;`, [ this.id, false ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+
+   this.banished = false;
 }
 
 export default UserModel;
