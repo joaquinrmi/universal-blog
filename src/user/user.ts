@@ -100,6 +100,11 @@ class BasicUser
    {
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }
+
+   async banishUser(model: Model, aliasOrEmail: string, reason?: string): Promise<void>
+   {
+      return Promise.reject(ErrorCode.InsufficientPermissions);
+   }
 }
 
 export default BasicUser;
