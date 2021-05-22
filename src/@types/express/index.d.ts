@@ -8,6 +8,7 @@ import Model from "../../model";
 import DeletePostForm from "../../api/post/delete_post_form";
 import PromoteForm from "../../api/user/promote_form";
 import DeleteCommentForm from "../../api/post/delete_comment_form";
+import BanishmentForm from "../../api/user/banishment_form";
 
 declare global
 {
@@ -25,6 +26,7 @@ declare global
       deletePostForm: DeletePostForm;
       promoteForm: PromoteForm;
       deleteCommentForm: DeleteCommentForm;
+      banishmentForm: BanishmentForm;
     }
   }
 }
