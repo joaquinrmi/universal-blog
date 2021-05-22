@@ -122,6 +122,11 @@ class AccountAPI extends Router
       {
          var user = await req.model.user.searchByAliasOrEmail(req.loginForm.aliasOrEmail, [ "id", "banished", "email", "alias", "password", "session_keys" ]);
 
+         if(!user || !user.checkPassword(req.loginForm.password))
+         {
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.IncorrectUserOrPassword));
+         }
+
          if(user.banished)
          {
             const banishment = await req.model.banishment.searchByEmail(user.email);
@@ -137,11 +142,6 @@ class AccountAPI extends Router
       {
          console.error(err);
          return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
-      }
-
-      if(!user || !user.checkPassword(req.loginForm.password))
-      {
-         return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.IncorrectUserOrPassword));
       }
 
       try
