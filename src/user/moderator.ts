@@ -65,6 +65,38 @@ class Moderator extends Author
          return Promise.reject(err);
       }
    }
+
+   async removeBanishment(model: Model, email: string): Promise<void>
+   {
+      try
+      {
+         const banishment = await model.banishment.searchByEmail(email);
+         if(banishment == null)
+         {
+            return;
+         }
+
+         const judge = await model.user.searchById(banishment.judge);
+         if(judge)
+         {
+            if(judge.rank > this.document.rank)
+            {
+               return Promise.reject(ErrorCode.InsufficientPermissions);
+            }
+         }
+
+         const targetUser = await model.user.searchByAliasOrEmail(email);
+
+         await model.beginTransaction();
+         if(targetUser) await targetUser.breakBanishment();
+         await model.banishment.removeBanishment(email);
+         await model.endTransaction();
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
 }
 
 export default Moderator;
