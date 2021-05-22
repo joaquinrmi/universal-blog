@@ -2,6 +2,7 @@ export enum MethodType
 {
    Get = "get",
    Post = "post",
+   Put = "put",
    Delete = "delete"
 }
 
