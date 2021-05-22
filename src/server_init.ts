@@ -18,11 +18,25 @@ async function serverInit(): Promise<void>
    try
    {
       await model.createTables();
+   }
+   catch(err)
+   {
+      if(err.code != "42P07")
+      {
+         return Promise.reject(err);
+      }
+   }
+
+   try
+   {
       await model.user.createUser(user);
    }
    catch(err)
    {
-      return Promise.reject(err);
+      if(err.code != "42P07")
+      {
+         return Promise.reject(err);
+      }
    }
 }
 
