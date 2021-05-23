@@ -9,6 +9,7 @@ import DeletePostForm from "../../api/post/delete_post_form";
 import PromoteForm from "../../api/user/promote_form";
 import DeleteCommentForm from "../../api/post/delete_comment_form";
 import BanishmentForm from "../../api/user/banishment_form";
+import RemoveBanishmentForm from "../../api/user/remove_banishment_form";
 
 declare global
 {
@@ -27,6 +28,7 @@ declare global
       promoteForm: PromoteForm;
       deleteCommentForm: DeleteCommentForm;
       banishmentForm: BanishmentForm;
+      removeBanishmentForm: RemoveBanishmentForm;
     }
   }
 }

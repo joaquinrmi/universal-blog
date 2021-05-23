@@ -13,16 +13,19 @@ class UserAPI extends Router
    {
       super([
          new RouteMap(MethodType.Post, "/promote", "promoteUser"),
-         new RouteMap(MethodType.Put, "/banish", "banishUser")
+         new RouteMap(MethodType.Put, "/banish", "banishUser"),
+         new RouteMap(MethodType.Put, "/remove-banishment", "removeBanishment")
       ]);
 
       this.registerFunction("promoteUser", this.promoteUser);
       this.registerFunction("banishUser", this.banishUser);
+      this.registerFunction("removeBanishment", this.removeBanishment);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(this.checkSession, [ "/promoteUser", "/banish" ]);
+      this.useMiddleware(this.checkSession, [ "/promoteUser", "/banish", "/remove-banishment" ]);
       this.useMiddleware(this.checkPromoteForm, [ "/promote" ]);
       this.useMiddleware(this.checkBanishmentForm, [ "/banish" ]);
+      this.useMiddleware(this.checkRemoveBanishmentForm, [ "/remove-banishment" ]);
    }
 
    async promoteUser(req: Request, res: Response): Promise<any>
@@ -88,6 +91,32 @@ class UserAPI extends Router
       res.status(StatusCode.OK).json();
    }
 
+   private async removeBanishment(req: Request, res: Response): Promise<any>
+   {
+      try
+      {
+         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
+
+         await user.removeBanishment(req.model, req.removeBanishmentForm.email);
+      }
+      catch(err)
+      {
+         switch(err)
+         {
+         case UserErrorCode.InsufficientPermissions:
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+
+         case UserErrorCode.UserNotFound:
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(`banishment for email "${req.removeBanishmentForm.email}" does not exist`));
+
+         default:
+            return Promise.reject(err);
+         }
+      }
+
+      res.status(StatusCode.OK).json();
+   }
+
    private async checkPromoteForm(req: Request, res: Response, next: NextFunction): Promise<any>
    {
       const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
@@ -110,6 +139,18 @@ class UserAPI extends Router
       if(req.body.reason && typeof req.body.reason != "string") return exit(ErrorType.InvalidForm);
 
       req.banishmentForm = req.body;
+
+      next();
+   }
+
+   private async checkRemoveBanishmentForm(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
+
+      if(!req.body) return exit(ErrorType.InvalidForm);
+      if(typeof req.body.email != "string") return exit(ErrorType.InvalidForm);
+
+      req.removeBanishmentForm = req.body;
 
       next();
    }
