@@ -186,7 +186,7 @@ class UserModel extends BasicModel<UserDocument>
 
    async deleteUser(user: UserDocument): Promise<void>
    {
-      if(!user.id)
+      if(user.id == undefined)
       {
          return Promise.reject("property 'id' of 'user' is undefined");
       }
@@ -202,6 +202,25 @@ class UserModel extends BasicModel<UserDocument>
       {
          return Promise.reject(err);
       }
+   }
+
+   async deleteAllUserSessionKeys(user: UserDocument): Promise<void>
+   {
+      if(user.id == undefined)
+      {
+         return Promise.reject("property 'id' of 'user' is undefined");
+      }
+
+      try
+      {
+         await this.client.query(`UPDATE users SET session_keys = $2 WHERE id = $1;`, [ user.id, [] ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      user.session_keys = [];
    }
 }
 
