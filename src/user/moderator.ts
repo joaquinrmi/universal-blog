@@ -62,6 +62,7 @@ class Moderator extends Author
       }
       catch(err)
       {
+         await model.rollbackTransaction();
          return Promise.reject(err);
       }
    }
@@ -94,6 +95,7 @@ class Moderator extends Author
       }
       catch(err)
       {
+         await model.rollbackTransaction();
          return Promise.reject(err);
       }
    }
