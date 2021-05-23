@@ -248,6 +248,17 @@ class AccountAPI extends Router
       try
       {
          var user = await req.model.user.searchByAliasOrEmail(req.cookies["user"].alias.toString(), [ "alias", "session_keys" ]);
+
+         if(user.banished)
+         {
+            const banishment = await req.model.banishment.searchByEmail(user.email);
+
+            return res.status(StatusCode.Unauthorized).json({
+               what: "banned",
+               date: banishment.date,
+               reason: banishment.reason
+            });
+         }
       }
       catch(err)
       {
