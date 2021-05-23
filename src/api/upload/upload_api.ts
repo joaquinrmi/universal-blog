@@ -7,6 +7,7 @@ import { Multer } from "multer";
 import ErrorType from "./error";
 import ImageKeeper from "../../image_keeper";
 import useModel from "../use_model";
+import checkSession from "../check_session";
 
 class UploadAPI extends Router
 {
@@ -19,7 +20,7 @@ class UploadAPI extends Router
       this.registerFunction("uploadImage", this.uploadImage);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(this.checkSession, [ "/image" ]);
+      this.useMiddleware(checkSession, [ "/image" ]);
       this.useMiddleware(upload.single("image"), [ "/image" ]);
    }
 
@@ -49,16 +50,6 @@ class UploadAPI extends Router
       res.json({
          imgUrl
       })
-   }
-
-   private async checkSession(req: Request, res: Response, next: NextFunction): Promise<any>
-   {
-      if(!req.session["alias"])
-      {
-         return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
-      }
-
-      next();
    }
 }
 

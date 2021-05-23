@@ -6,6 +6,7 @@ import ErrorResponse from "../error_response";
 import ErrorType from "./error";
 import useModel from "../use_model";
 import UserErrorCode from "../../user/error_code";
+import checkSession from "../check_session";
 
 class UserAPI extends Router
 {
@@ -22,7 +23,7 @@ class UserAPI extends Router
       this.registerFunction("removeBanishment", this.removeBanishment);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(this.checkSession, [ "/promoteUser", "/banish", "/remove-banishment" ]);
+      this.useMiddleware(checkSession, [ "/promoteUser", "/banish", "/remove-banishment" ]);
       this.useMiddleware(this.checkPromoteForm, [ "/promote" ]);
       this.useMiddleware(this.checkBanishmentForm, [ "/banish" ]);
       this.useMiddleware(this.checkRemoveBanishmentForm, [ "/remove-banishment" ]);
@@ -151,16 +152,6 @@ class UserAPI extends Router
       if(typeof req.body.email != "string") return exit(ErrorType.InvalidForm);
 
       req.removeBanishmentForm = req.body;
-
-      next();
-   }
-
-   private async checkSession(req: Request, res: Response, next: NextFunction): Promise<any>
-   {
-      if(!req.session["alias"])
-      {
-         return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
-      }
 
       next();
    }

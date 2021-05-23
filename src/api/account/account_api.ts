@@ -6,6 +6,7 @@ import ErrorResponse from "../error_response";
 import ErrorType from "./error";
 import { User } from "../../model/user";
 import useModel from "../use_model";
+import checkSession from "../check_session";
 
 class AccountAPI extends Router
 {
@@ -29,7 +30,7 @@ class AccountAPI extends Router
       this.useMiddleware(this.checkSignupForm, [ "/create" ]);
       this.useMiddleware(this.restoreSessionMid, [ "/login", "/restore-session"]);
       this.useMiddleware(this.checkLoginForm, [ "/login" ]);
-      this.useMiddleware(this.checkSession, [ "/delete", "/logout" ]);
+      this.useMiddleware(checkSession, [ "/delete", "/logout" ]);
       this.useMiddleware(this.checkDeleteForm, [ "/delete" ]);
    }
 
@@ -301,16 +302,6 @@ class AccountAPI extends Router
       if(typeof req.body.password != "string") return exit(ErrorType.InvalidForm);
 
       req.deleteForm = req.body;
-
-      next();
-   }
-
-   private async checkSession(req: Request, res: Response, next: NextFunction): Promise<any>
-   {
-      if(!req.session["alias"])
-      {
-         return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
-      }
 
       next();
    }

@@ -10,6 +10,7 @@ import { Comment } from "../../model/comment";
 import { Like } from "../../model/like";
 import useModel from "../use_model";
 import UserErrorCode from "../../user/error_code";
+import checkSession from "../check_session";
 
 class PostAPI extends Router
 {
@@ -36,7 +37,7 @@ class PostAPI extends Router
       this.registerFunction("getComment", this.getComment);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(this.checkSession, [ "/create", "/delete", "/comment", "/delete-comment", "/like" ]);
+      this.useMiddleware(checkSession, [ "/create", "/delete", "/comment", "/delete-comment", "/like" ]);
       this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
       this.useMiddleware(this.checkDeletePostForm, [ "/delete" ]);
       this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
@@ -459,16 +460,6 @@ class PostAPI extends Router
       if(typeof req.body.postId != "string") return exit(ErrorType.InvalidForm);
 
       req.likeForm = req.body;
-
-      next();
-   }
-
-   private async checkSession(req: Request, res: Response, next: NextFunction): Promise<any>
-   {
-      if(!req.session["alias"])
-      {
-         return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
-      }
 
       next();
    }
