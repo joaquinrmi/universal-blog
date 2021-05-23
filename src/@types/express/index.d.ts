@@ -10,6 +10,7 @@ import PromoteForm from "../../api/user/promote_form";
 import DeleteCommentForm from "../../api/post/delete_comment_form";
 import BanishmentForm from "../../api/user/banishment_form";
 import RemoveBanishmentForm from "../../api/user/remove_banishment_form";
+import BasicUser from "../../user/user";
 
 declare global
 {
@@ -18,6 +19,7 @@ declare global
     interface Request
     {
       model: Model;
+      user: BasicUser;
       signupForm: SignupForm;
       loginForm: LoginForm;
       postForm: PostForm;
