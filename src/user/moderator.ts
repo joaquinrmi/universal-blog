@@ -50,6 +50,8 @@ class Moderator extends Author
             return Promise.reject(ErrorCode.UserNotFound);
          }
 
+         await model.user.deleteAllUserSessionKeys(targetUser);
+
          if(targetUser.rank >= this.document.rank)
          {
             return Promise.reject(ErrorCode.InsufficientPermissions);
