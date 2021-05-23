@@ -73,7 +73,7 @@ class Moderator extends Author
          const banishment = await model.banishment.searchByEmail(email);
          if(banishment == null)
          {
-            return;
+            return Promise.reject(ErrorCode.UserNotFound);
          }
 
          const judge = await model.user.searchById(banishment.judge);
