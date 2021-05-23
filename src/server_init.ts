@@ -33,7 +33,7 @@ async function serverInit(): Promise<void>
    }
    catch(err)
    {
-      if(err.code != "42P07")
+      if(err.code != "23505")
       {
          return Promise.reject(err);
       }
