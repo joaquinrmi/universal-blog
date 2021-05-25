@@ -82,7 +82,7 @@ class UserAPI extends Router
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
 
          case UserErrorCode.UserNotFound:
-            return res.status(StatusCode.Conflict).json(new ErrorResponse(`user with alias or email "${req.banishmentForm.aliasOrEmail}" does not exist`));
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.UserDoesNotExist));
 
          default:
             return res.status(StatusCode.InternalServerError).json();
@@ -108,10 +108,10 @@ class UserAPI extends Router
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
 
          case UserErrorCode.UserNotFound:
-            return res.status(StatusCode.Conflict).json(new ErrorResponse(`banishment for email "${req.removeBanishmentForm.email}" does not exist`));
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.UserDoesNotExist));
 
          default:
-            return Promise.reject(err);
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 
