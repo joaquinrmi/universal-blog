@@ -27,6 +27,8 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
         * [`/post/get-list`](https://github.com/joaquinrmi/universal-blog#postget-list)
     + [User API](https://github.com/joaquinrmi/universal-blog#user-api)
         * [`/user/promote`](https://github.com/joaquinrmi/universal-blog#userpromote)
+        * [`/user/banish`](https://github.com/joaquinrmi/universal-blog#userbanish)
+        * [`/user/remove-banishment`](https://github.com/joaquinrmi/universal-blog#userremovebanishment)
     + [Upload API](https://github.com/joaquinrmi/universal-blog#upload-api)
 
 ## Variables de entorno
@@ -356,6 +358,83 @@ Las rutas de los servicios de usuario siempre comienzan con `/user`.
 **Respuesta**:
 ```json
 {}
+```
+
+#### `/user/banish`
+
+**Descripción**: permite bloquear el acceso a un usuario. Además, agrega su dirección de *email* a una lista negra para que pueda usarse para crear una nueva cuenta.
+
+**Método**: `PUT`.
+
+**Formulario**:
+```json
+{
+   "aliasOrEmail": "string",
+   "reason": "string"
+}
+```
+El campo `aliasOrEmail` es el alias o el email del usuario a bloquear y `reason` es un campo opcional que detalla la razón del bloqueo.
+
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
+
+**Error `insufficient_permissions`**:
+* Descripción: este error ocurre cuando el usuario no tiene rango de moderador ni de administrador o cuando se intenta bloquear a un usuario de mayor rango.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
+```
+
+**Error `user_does_not_exist`**:
+* Descripción: este error ocurre cuando el usuario que se intenta bloquear no existe.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "user_does_not_exist"
+}
+```
+
+#### `/user/remove-banishment`
+
+**Descripción**: elimina el bloqueo de acceso a un usuario. Si el usuario no existe, de todas formas se quitará su dirección de correo electrónico de la lista negra.
+
+**Método**: `PUT`.
+
+**Formulario**:
+```json
+{
+   "email": "string"
+}
+```
+Se identifica al usuario por su correo electrónico, ya que su cuenta puede que haya sido eliminada.
+
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
+
+**Error `insufficient_permissions`**:
+* Descripción: este error ocurre cuando el usuario no tiene rango de moderador ni de administrador o cuando el usuario que se intenta desbloquar ha sido bloqueado por un usuario con un rango superior.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
+```
+
+**Error `user_does_not_exist`**:
+* Descripción: este error ocurre cuando el usuario que se intenta desbloquear no existe.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "user_does_not_exist"
+}
 ```
 
 ### Upload API
