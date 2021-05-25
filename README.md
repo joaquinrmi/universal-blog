@@ -28,7 +28,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
     + [User API](https://github.com/joaquinrmi/universal-blog#user-api)
         * [`/user/promote`](https://github.com/joaquinrmi/universal-blog#userpromote)
         * [`/user/banish`](https://github.com/joaquinrmi/universal-blog#userbanish)
-        * [`/user/remove-banishment`](https://github.com/joaquinrmi/universal-blog#userremovebanishment)
+        * [`/user/remove-banishment`](https://github.com/joaquinrmi/universal-blog#userremove-banishment)
     + [Upload API](https://github.com/joaquinrmi/universal-blog#upload-api)
 
 ## Variables de entorno
@@ -343,7 +343,7 @@ Las rutas de los servicios de usuario siempre comienzan con `/user`.
 
 #### `/user/promote`
 
-**Descripción**: Le otorga un nuevo rango a un usuario.
+**Descripción**: cambia el rango de un determinado usuario, ya sea para promoverlo o degradarlo.
 
 **Método**: `POST`.
 
@@ -355,9 +355,38 @@ Las rutas de los servicios de usuario siempre comienzan con `/user`.
 }
 ```
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
+
+**Error `invalid_form`**:
+* Descripción: este error ocurre cuando el valor del campo `rank` del formulario no es uno de los permitidos.
+* Código: 400 (Bad Request).
+* Cuerpo:
 ```json
-{}
+{
+   "what": "invalid_form"
+}
+```
+
+**Error `insufficient_permissions`**:
+* Descripción: este error ocurre cuando el usuario que hace la consulta no cuenta con un rango de administrador.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
+```
+
+**Error `user_does_not_exist`**:
+* Descripción: este error ocurre cuando el usuario que se intenta promover no exite.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "user_does_not_exist"
+}
 ```
 
 #### `/user/banish`
