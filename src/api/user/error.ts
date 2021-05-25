@@ -4,7 +4,8 @@ enum ErrorType
    SessionDoesNotExist = "session_does_not_exist",
    InvalidForm = "invalid_form",
    InsufficientPermissions = "insufficient_permissions",
-   UserDoesNotExist = "user_does_not_exist"
+   UserDoesNotExist = "user_does_not_exist",
+   InvalidQuery = "invalid_query"
 }
 
 export default ErrorType;
