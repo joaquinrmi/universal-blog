@@ -29,6 +29,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
         * [`/user/promote`](https://github.com/joaquinrmi/universal-blog#userpromote)
         * [`/user/banish`](https://github.com/joaquinrmi/universal-blog#userbanish)
         * [`/user/remove-banishment`](https://github.com/joaquinrmi/universal-blog#userremove-banishment)
+        * [`/user/banishment-list`](https://github.com/joaquinrmi/universal-blog#userbanishment-list)
     + [Upload API](https://github.com/joaquinrmi/universal-blog#upload-api)
 
 ## Variables de entorno
@@ -465,6 +466,48 @@ Se identifica al usuario por su correo electrónico, ya que su cuenta puede que 
    "what": "user_does_not_exist"
 }
 ```
+
+#### `/user/banishment-list`
+
+**Descripción**: accede a una lista con los datos de los usuarios bloqueados del servidor.
+
+**Método**: `GET`.
+
+**Query**:
+```json
+{
+   "count": "number",
+   "offset": "number",
+   "orderType": "email | date",
+   "order": "asc | desc",
+   "judgeId": "number"
+}
+```
+El campo `judgeId` es opcional y permite filtrar los resultados según el identificador del moderador o administrador encargado del bloqueo.
+
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo:
+```json
+[
+   {
+      "banishment":
+      {
+         "email": "string",
+         "reason": "string",
+         "date": "string",
+         "judge": "number"
+      },
+      "user":
+      {
+         "name": "string",
+         "surname": "string",
+         "alias": "string"
+      }
+   }
+]
+```
+Si el usuario ha sido eliminado, entonces el campo `user` será un objeto vacío.
 
 ### Upload API
 
