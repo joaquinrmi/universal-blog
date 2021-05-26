@@ -1,7 +1,8 @@
 import BasicModel from "./basic_model";
 import { Pool } from "pg";
 import Skeleton from "./skeleton";
-import { UserDocument } from "./user";
+import { UserDocument, User } from "./user";
+import BanishmentListQuery from "./banishment_list_query";
 
 export interface Banishment
 {
@@ -25,6 +26,63 @@ class BanishmentModel extends BasicModel<BanishmentDocument>
    constructor(pool: Pool)
    {
       super(pool, banishmentSkeleton);
+   }
+
+   async search(query: BanishmentListQuery): Promise<{ banishment: Banishment, user: User }[]>
+   {
+      const banishmentProps = this.props;
+      const userProps = [
+         "name", "surname", "alias"
+      ];
+
+      const where = query.judgeId != undefined;
+      const whereClause = where ? `WHERE banishments.judge = ${query.judgeId}` : ``;
+
+      const orderByClause = `ORDER BY ${query.orderType} ${query.order}`;
+
+      const dbQuery = `SELECT ${banishmentProps.map(prop => `banishments.${prop}`).join(",")}, ${userProps.map(prop => `users.${prop}`).join(",")} FROM banishments LEFT JOIN users ON banishments.email = users.email ${whereClause} ${orderByClause} LIMIT $1 OFFSET $2;`;
+
+      const queryValues = [ query.count, query.offset ];
+
+      try
+      {
+         var res = await this.pool.query(dbQuery, queryValues);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      const result: { banishment: Banishment, user: User }[] = [];
+
+      for(let i = 0; i < res.rowCount; ++i)
+      {
+         const row = res.rows[i];
+
+         let banishment: Banishment = {
+            email: row.email,
+            reason: row.reason,
+            date: row.date,
+            judge: row.judge
+         };
+
+         let user: User = {
+            name: row.name || undefined,
+            surname: row.surname || undefined,
+            alias: row.alias || undefined,
+            password: undefined,
+            email: undefined,
+            rank: undefined,
+            date_join: undefined
+         };
+
+         result.push({
+            banishment,
+            user
+         });
+      }
+
+      return result;
    }
 
    async searchByEmail(email: string): Promise<BanishmentDocument>
