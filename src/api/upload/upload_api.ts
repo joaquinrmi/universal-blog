@@ -26,30 +26,20 @@ class UploadAPI extends Router
 
    async uploadImage(req: Request, res: Response): Promise<any>
    {
+      const imageKeeper = new ImageKeeper(req.user.document);
       try
       {
-         var user = await req.model.user.searchByAliasOrEmail(req.session["alias"]);
+         var imgUrl = await imageKeeper.saveImage(req.file.buffer);
       }
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
-      const imageKeeper = new ImageKeeper(user);
-      try
-      {
-         var imgUrl = imageKeeper.saveImage(req.file.buffer);
-      }
-      catch(err)
-      {
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
-      }
-
-      res.json({
+      res.status(StatusCode.Created).json({
          imgUrl
-      })
+      });
    }
 }
 
