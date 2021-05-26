@@ -147,8 +147,7 @@ class PostAPI extends Router
    {
       try
       {
-         var user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
-         await user.deleteComment(req.model, req.deleteCommentForm.id);
+         await req.user.deleteComment(req.model, req.deleteCommentForm.id);
       }
       catch(err)
       {
@@ -159,10 +158,11 @@ class PostAPI extends Router
 
          case UserErrorCode.InsufficientPermissions:
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
-         }
 
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         default:
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         }
       }
 
       res.status(StatusCode.OK).json();
