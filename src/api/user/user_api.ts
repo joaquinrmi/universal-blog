@@ -41,7 +41,7 @@ class UserAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       try
@@ -60,13 +60,14 @@ class UserAPI extends Router
 
          case UserErrorCode.UserNotFound:
             return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.UserDoesNotExist));
-         }
 
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         default:
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         }
       }
 
-      res.json({});
+      res.status(StatusCode.OK).json();
    }
 
    async banishUser(req: Request, res: Response): Promise<any>
