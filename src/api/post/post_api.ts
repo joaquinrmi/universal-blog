@@ -61,23 +61,22 @@ class PostAPI extends Router
 
       try
       {
-         var user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
-         var postId = await user.createPost(req.model, postData);
+         var postId = await req.user.createPost(req.model, postData);
       }
       catch(err)
       {
-         if(err == UserErrorCode.InsufficientPermissions)
+         switch(err)
          {
+         case UserErrorCode.InsufficientPermissions:
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
-         }
 
-         if(err == PostErrorCode.TitleAlreadyUsed)
-         {
+         case PostErrorCode.TitleAlreadyUsed:
             return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.TheTitleIsAlreadyUsed));
-         }
 
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         default:
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         }
       }
 
       res.status(StatusCode.Created).json({
