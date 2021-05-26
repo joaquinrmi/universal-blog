@@ -208,17 +208,17 @@ class PostAPI extends Router
       try
       {
          var post = await req.model.post.searchById(req.query.postId.toString());
+         if(!post)
+         {
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+         }
+
          var author = await req.model.user.searchById(post.author_id, [ "alias" ]);
       }
       catch(err)
       {
          console.error(err);
          return res.status(StatusCode.InternalServerError).json();
-      }
-
-      if(!post)
-      {
-         return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
       }
       
       res.status(StatusCode.OK).json({
