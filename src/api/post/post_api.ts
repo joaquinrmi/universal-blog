@@ -349,6 +349,10 @@ class PostAPI extends Router
       try
       {
          var comment = await req.model.comment.searchById(Number(req.query["id"]));
+         if(!comment)
+         {
+            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.CommentDoesNotExist));
+         }
       }
       catch(err)
       {
