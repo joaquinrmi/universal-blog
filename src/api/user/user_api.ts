@@ -7,6 +7,7 @@ import ErrorType from "./error";
 import useModel from "../use_model";
 import UserErrorCode from "../../user/error_code";
 import checkSession from "../check_session";
+import BanishmentListQuery from "../../model/banishment_list_query";
 
 class UserAPI extends Router
 {
@@ -15,15 +16,17 @@ class UserAPI extends Router
       super([
          new RouteMap(MethodType.Post, "/promote", "promoteUser"),
          new RouteMap(MethodType.Put, "/banish", "banishUser"),
-         new RouteMap(MethodType.Put, "/remove-banishment", "removeBanishment")
+         new RouteMap(MethodType.Put, "/remove-banishment", "removeBanishment"),
+         new RouteMap(MethodType.Get, "/banishment-list", "banishmentList")
       ]);
 
       this.registerFunction("promoteUser", this.promoteUser);
       this.registerFunction("banishUser", this.banishUser);
       this.registerFunction("removeBanishment", this.removeBanishment);
+      this.registerFunction("banishmentList", this.banishmentList);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(checkSession, [ "/promoteUser", "/banish", "/remove-banishment" ]);
+      this.useMiddleware(checkSession, [ "/promoteUser", "/banish", "/remove-banishment", "/banishment-list" ]);
       this.useMiddleware(this.checkPromoteForm, [ "/promote" ]);
       this.useMiddleware(this.checkBanishmentForm, [ "/banish" ]);
       this.useMiddleware(this.checkRemoveBanishmentForm, [ "/remove-banishment" ]);
@@ -116,6 +119,38 @@ class UserAPI extends Router
       }
 
       res.status(StatusCode.OK).json();
+   }
+
+   private async banishmentList(req: Request, res: Response): Promise<any>
+   {
+      if(!req.query.offset || !req.query.count)
+      {
+         return res.status(StatusCode.BadRequest).json(new ErrorResponse(ErrorType.InvalidQuery));
+      }
+
+      let searchQuery: BanishmentListQuery = {
+         count: Number(req.query.count),
+         offset: Number(req.query.offset),
+         orderType: "date",
+         order: "desc"
+      };
+
+      if(req.query.judgeId)
+      {
+         searchQuery.judgeId = Number(req.query.judgeId);
+      }
+
+      try
+      {
+         var banishments = await req.model.banishment.search(searchQuery);
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json();
+      }
+
+      res.status(StatusCode.OK).json(banishments);
    }
 
    private async checkPromoteForm(req: Request, res: Response, next: NextFunction): Promise<any>
