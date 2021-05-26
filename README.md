@@ -34,7 +34,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
 
 ## Variables de entorno
 
-Para el funcionamiento de la aplicación, habrá que establecer previamente las siguientes variables de entorno del servidor.
+Para el funcionamiento de la aplicación, se deberán establecer previamente las siguientes variables de entorno del servidor.
 * `SERVER_NAME`: es el nombre de la aplicación.
 * `PORT`: es el número de puerto que se le asignará al servidor.
 * `ADMIN_PASSWORD`, `ADMIN_EMAIL`, `ADMIN_ALIAS`: datos del usuario administrador por defecto.
@@ -82,7 +82,7 @@ Las rutas de los servicios de cuenta comienzan siempre con `/account`.
 
 #### `/account/create`
 
-**Descripción**: Creación de una nueva cuenta de usuario.
+**Descripción**: creación de una nueva cuenta de usuario.
 
 **Método**: `POST`.
 
@@ -98,10 +98,42 @@ Las rutas de los servicios de cuenta comienzan siempre con `/account`.
 ```
 El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclusive. Tanto `name` como `surname` deben tener una longitud máxima de `32` caracteres, mientras que `alias` solo puede tener a lo más `16` caracteres.
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 201 (Created).
+* Cuerpo:
 ```json
 {
    "alias": "string"
+}
+```
+
+**Error `alias_is_already_used`**
+* Descripción: este error ocurre cuando el *alias* enviado en el formulario ya se encuentra utilizado por otra cuenta.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "alias_is_already_used"
+}
+```
+
+**Error `email_is_already_used`**
+* Descripción: este error ocurre cuando el correo electrónico enviado en el formulario ya se encuentra asociado a otra cuenta.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "email_is_already_used"
+}
+```
+
+**Error `email_is_banned`**
+* Descripción: este error ocurre cuando el correo electrónico enviado en el formulario se encuentra bloqueado en el servidor y no puede utilizarse para crear una nueva cuenta de usuario.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "email_is_banned"
 }
 ```
 
