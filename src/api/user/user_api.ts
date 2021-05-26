@@ -63,7 +63,7 @@ class UserAPI extends Router
 
          default:
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 

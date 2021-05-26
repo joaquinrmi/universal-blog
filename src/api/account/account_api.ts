@@ -56,7 +56,7 @@ class AccountAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       const user: User = {
@@ -72,7 +72,7 @@ class AccountAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       res.json({
@@ -89,7 +89,7 @@ class AccountAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       try
@@ -106,7 +106,7 @@ class AccountAPI extends Router
          await req.model.rollbackTransaction();
 
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       req.session["alias"] = null;
@@ -142,7 +142,7 @@ class AccountAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       try
@@ -152,7 +152,7 @@ class AccountAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       req.session["alias"] = user.alias;
@@ -185,7 +185,7 @@ class AccountAPI extends Router
       }
       catch(err)
       {
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       req.session["alias"] = null;
@@ -264,7 +264,7 @@ class AccountAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       if(!user)

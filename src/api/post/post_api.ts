@@ -75,7 +75,7 @@ class PostAPI extends Router
 
          default:
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 
@@ -102,7 +102,7 @@ class PostAPI extends Router
 
          default:
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 
@@ -134,7 +134,7 @@ class PostAPI extends Router
 
          default:
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 
@@ -161,7 +161,7 @@ class PostAPI extends Router
 
          default:
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 
@@ -191,7 +191,7 @@ class PostAPI extends Router
 
          default:
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
       }
 
@@ -213,7 +213,7 @@ class PostAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       if(!post)
@@ -287,7 +287,7 @@ class PostAPI extends Router
          catch(err)
          {
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
 
          if(!user)
@@ -305,7 +305,7 @@ class PostAPI extends Router
       catch(err)
       {
          console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       let result = new Array<any>(posts.length);
@@ -319,7 +319,7 @@ class PostAPI extends Router
          catch(err)
          {
             console.error(err);
-            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+            return res.status(StatusCode.InternalServerError).json();
          }
 
          result[i] = {
@@ -352,7 +352,7 @@ class PostAPI extends Router
       }
       catch(err)
       {
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         return res.status(StatusCode.InternalServerError).json();
       }
 
       res.status(StatusCode.OK).json({
