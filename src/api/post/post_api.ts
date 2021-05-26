@@ -113,16 +113,14 @@ class PostAPI extends Router
    {
       try
       {
-         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
-
          const comment: Comment = {
-            author_id: user.document.id,
+            author_id: req.user.document.id,
             post_id: req.commentForm.postId,
             content: req.commentForm.content,
             date_created: new Date()
          };
 
-         var commentId = await user.comment(req.model, req.commentForm.postId, comment);
+         var commentId = await req.user.comment(req.model, req.commentForm.postId, comment);
       }
       catch(err)
       {
@@ -133,10 +131,11 @@ class PostAPI extends Router
 
          case UserErrorCode.InsufficientPermissions:
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
-         }
 
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         default:
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json(new ErrorResponse(ErrorType.InternalError));
+         }
       }
 
       res.status(StatusCode.Created).json({
