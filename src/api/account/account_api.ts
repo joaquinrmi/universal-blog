@@ -186,7 +186,7 @@ class AccountAPI extends Router
 
    private async restoreSession(req: Request, res: Response): Promise<any>
    {
-      res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
+      res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.SessionDoesNotExist));
    }
 
    private async checkSignupForm(req: Request, res: Response, next: NextFunction): Promise<any>
@@ -238,6 +238,11 @@ class AccountAPI extends Router
       {
          var user = await req.model.user.searchByAliasOrEmail(req.cookies["user"].alias.toString(), [ "alias", "session_keys" ]);
 
+         if(user == null)
+         {
+            return next();
+         }
+
          if(user.banished)
          {
             const banishment = await req.model.banishment.searchByEmail(user.email);
@@ -255,11 +260,6 @@ class AccountAPI extends Router
          return res.status(StatusCode.InternalServerError).json();
       }
 
-      if(!user)
-      {
-         return next();
-      }
-
       if(!user.checkSession(req.cookies["user"].key.toString()))
       {
          return next();
@@ -275,7 +275,7 @@ class AccountAPI extends Router
          maxAge: 365 * 24 * 60 * 60 * 1000
       });
 
-      res.json({
+      res.status(StatusCode.OK).json({
          alias: user.alias
       });
    }
