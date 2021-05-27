@@ -84,21 +84,11 @@ class AccountAPI extends Router
    {
       try
       {
-         var user = await req.model.user.searchByAliasOrEmail(req.session["alias"], [ "id" ]);
-      }
-      catch(err)
-      {
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json();
-      }
-
-      try
-      {
          await req.model.beginTransaction();
-         await req.model.post.deleteAllUserPosts(req.model.like, req.model.comment, user);
-         await req.model.like.deleteAllUserLikes(req.model.post, user);
-         await req.model.comment.deleteAllUserComments(req.model.post, user);
-         await req.model.user.deleteUser(user);
+         await req.model.post.deleteAllUserPosts(req.model.like, req.model.comment, req.user.document);
+         await req.model.like.deleteAllUserLikes(req.model.post, req.user.document);
+         await req.model.comment.deleteAllUserComments(req.model.post, req.user.document);
+         await req.model.user.deleteUser(req.user.document);
          await req.model.endTransaction();
       }
       catch(err)
@@ -114,7 +104,7 @@ class AccountAPI extends Router
 
       res.cookie("user", null);
 
-      res.json({});
+      res.status(StatusCode.OK).json();
    }
 
    private async login(req: Request, res: Response): Promise<any>
