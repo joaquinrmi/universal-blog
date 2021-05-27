@@ -155,7 +155,7 @@ class AccountAPI extends Router
          maxAge: 365 * 24 * 60 * 60 * 1000
       });
 
-      res.json({
+      res.status(StatusCode.Created).json({
          alias: user.alias
       });
    }
