@@ -36,17 +36,7 @@ class UserAPI extends Router
    {
       try
       {
-         var user = await req.model.user.getUserByAliasOrEmail(req.session["session"]);
-      }
-      catch(err)
-      {
-         console.error(err);
-         return res.status(StatusCode.InternalServerError).json();
-      }
-
-      try
-      {
-         await user.promoteUser(req.model, req.promoteForm.aliasOrEmail, req.promoteForm.rank);
+         await req.user.promoteUser(req.model, req.promoteForm.aliasOrEmail, req.promoteForm.rank);
       }
       catch(err)
       {
@@ -74,9 +64,7 @@ class UserAPI extends Router
    {
       try
       {
-         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
-
-         await user.banishUser(req.model, req.banishmentForm.aliasOrEmail, req.banishmentForm.reason);
+         await req.user.banishUser(req.model, req.banishmentForm.aliasOrEmail, req.banishmentForm.reason);
       }
       catch(err)
       {
@@ -100,9 +88,7 @@ class UserAPI extends Router
    {
       try
       {
-         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
-
-         await user.removeBanishment(req.model, req.removeBanishmentForm.email);
+         await req.user.removeBanishment(req.model, req.removeBanishmentForm.email);
       }
       catch(err)
       {
