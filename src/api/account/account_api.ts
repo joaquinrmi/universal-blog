@@ -75,7 +75,7 @@ class AccountAPI extends Router
          return res.status(StatusCode.InternalServerError).json();
       }
 
-      res.json({
+      res.status(StatusCode.Created).json({
          alias: user.alias
       });
    }
