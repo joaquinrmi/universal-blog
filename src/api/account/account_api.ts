@@ -169,9 +169,7 @@ class AccountAPI extends Router
 
       try
       {
-         const user = await req.model.user.getUserByAliasOrEmail(req.session["alias"]);
-
-         await user.document.eraseSession(req.cookies["user"].key);
+         await req.user.document.eraseSession(req.cookies["user"].key);
       }
       catch(err)
       {
@@ -183,7 +181,7 @@ class AccountAPI extends Router
 
       res.cookie("user", null);
 
-      res.json();
+      res.status(StatusCode.OK).json();
    }
 
    private async restoreSession(req: Request, res: Response): Promise<any>
