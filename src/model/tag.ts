@@ -39,6 +39,26 @@ class TagModel extends BasicModel<TagDocument>
 
       return this.getDocument(res.rows[0]);
    }
+
+   async create(tag: string): Promise<TagDocument>
+   {
+      try
+      {
+         const tagDoc = await this.search(tag);
+         if(tagDoc != null)
+         {
+            return tagDoc;
+         }
+
+         var res = await this.pool.query(`INSERT INTO tags (tag, count, updated_date) VALUES ($1, $2, $3);`, [ tag, 0, new Date() ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
+   }
 }
 
 export default TagModel;
