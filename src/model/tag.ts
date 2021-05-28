@@ -13,6 +13,8 @@ export interface Tag
 export interface TagDocument extends Tag
 {
    pool: Pool;
+
+   addPost(): Promise<void>;
 }
 
 const tagSkeleton = new Skeleton<TagDocument>();
@@ -58,6 +60,18 @@ class TagModel extends BasicModel<TagDocument>
       }
 
       return this.getDocument(res.rows[0]);
+   }
+}
+
+tagSkeleton.methods.addPost = async function(this: TagDocument): Promise<void>
+{
+   try
+   {
+      await this.pool.query(`UPDATE tags SET count = count + 1 WHERE id = $1;`, [ this.id ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
    }
 }
 
