@@ -83,6 +83,14 @@ class Model
             date timestamp NOT NULL,
             judge int references users(id)
          );`);
+
+         await this.pool.query(`CREATE TABLE tags
+         (
+            id serial PRIMARY KEY,
+            tag text UNIQUE NOT NULL,
+            count int NOT NULL,
+            updated_date timestamp NOT NULL
+         );`);
       }
       catch(err)
       {

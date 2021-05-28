@@ -50,3 +50,11 @@ CREATE TABLE banishments
 	date timestamp NOT NULL,
 	judge int references users(id)
 );
+
+CREATE TABLE tags
+(
+	id serial PRIMARY KEY,
+	tag text UNIQUE NOT NULL,
+	count int NOT NULL,
+	updated_date timestamp NOT NULL
+);
