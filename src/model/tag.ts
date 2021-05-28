@@ -25,6 +25,20 @@ class TagModel extends BasicModel<TagDocument>
    {
       super(pool, tagSkeleton);
    }
+
+   async search(tag: string): Promise<TagDocument>
+   {
+      try
+      {
+         var res = await this.pool.query(`SELECT FROM tags WHERE tag = $1;`, [ tag ]);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      return this.getDocument(res.rows[0]);
+   }
 }
 
 export default TagModel;
