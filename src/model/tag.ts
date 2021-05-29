@@ -33,7 +33,7 @@ class TagModel extends BasicModel<TagDocument>
    {
       try
       {
-         var res = await this.pool.query(`SELECT FROM tags WHERE tag = $1;`, [ tag ]);
+         var res = await this.pool.query(`SELECT ${this.props.join(",")} FROM tags WHERE tag = $1;`, [ tag ]);
       }
       catch(err)
       {
