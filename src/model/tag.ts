@@ -29,6 +29,26 @@ class TagModel extends BasicModel<TagDocument>
       super(pool, tagSkeleton);
    }
 
+   async getAll(): Promise<Array<TagDocument>>
+   {
+      try
+      {
+         var res = await this.pool.query(`SELECT ${this.props.join(",")} FROM tags;`);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+
+      let result: Array<TagDocument> = [];
+      for(let i = 0; i < res.rowCount; ++i)
+      {
+         result.push(this.getDocument(res.rows[i]));
+      }
+
+      return result;
+   }
+
    async search(tag: string): Promise<TagDocument>
    {
       try
