@@ -15,10 +15,18 @@ class Author extends Reader
    {
       try
       {
+         await model.beginTransaction();
          var postId = await model.post.createPost(this.document, postData);
+         for(let i = 0; i < postData.tags.length; ++i)
+         {
+            const tagDoc = await model.tag.create(postData.tags[i]);
+            await tagDoc.addPost();
+         }
+         await model.endTransaction();
       }
       catch(err)
       {
+         await model.rollbackTransaction();
          return Promise.reject(err);
       }
       
