@@ -4,6 +4,7 @@ import PostModel from "./post";
 import CommentModel from "./comment";
 import LikeModel from "./like";
 import BanishmentModel from "./banishment";
+import TagModel from "./tag";
 
 const pool = new Pool();
 
@@ -16,6 +17,7 @@ class Model
    comment: CommentModel;
    like: LikeModel;
    banishment: BanishmentModel;
+   tag: TagModel;
 
    constructor()
    {
@@ -25,6 +27,7 @@ class Model
       this.comment = new CommentModel(this.pool);
       this.like = new LikeModel(this.pool);
       this.banishment = new BanishmentModel(this.pool);
+      this.tag = new TagModel(this.pool);
    }
 
    async createTables(): Promise<void>
@@ -106,6 +109,7 @@ class Model
       this.comment.setClient(this.client);
       this.like.setClient(this.client);
       this.banishment.setClient(this.client);
+      this.tag.setClient(this.client);
    }
 
    async endTransaction(): Promise<void>
@@ -118,6 +122,7 @@ class Model
       this.comment.setClient(null);
       this.like.setClient(null);
       this.banishment.setClient(null);
+      this.tag.setClient(this.client);
    }
 
    async rollbackTransaction(): Promise<void>
@@ -132,6 +137,7 @@ class Model
       this.comment.setClient(null);
       this.like.setClient(null);
       this.banishment.setClient(null);
+      this.tag.setClient(this.client);
    }
 }
 
