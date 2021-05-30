@@ -24,7 +24,8 @@ class PostAPI extends Router
          new RouteMap(MethodType.Post, "/like", "like"),
          new RouteMap(MethodType.Get, "/get-single", "getPost"),
          new RouteMap(MethodType.Get, "/get-list", "searchPosts"),
-         new RouteMap(MethodType.Get, "/get-comment", "getComment")
+         new RouteMap(MethodType.Get, "/get-comment", "getComment"),
+         new RouteMap(MethodType.Get, "/tag-list", "getTags")
       ]);
 
       this.registerFunction("createPost", this.createPost);
@@ -35,6 +36,7 @@ class PostAPI extends Router
       this.registerFunction("getPost", this.getPost);
       this.registerFunction("searchPosts", this.searchPosts);
       this.registerFunction("getComment", this.getComment);
+      this.registerFunction("getTags", this.getTags);
 
       this.useMiddleware(useModel);
       this.useMiddleware(checkSession, [ "/create", "/delete", "/comment", "/delete-comment", "/like" ]);
@@ -366,6 +368,31 @@ class PostAPI extends Router
          content: comment.content,
          dateCreated: comment.date_created.getTime()
       });
+   }
+
+   private async getTags(req: Request, res: Response): Promise<any>
+   {
+      try
+      {
+         var tags = await req.model.tag.getAll();
+      }
+      catch(err)
+      {
+         console.error(err);
+         return res.status(StatusCode.InternalServerError).json();
+      }
+
+      let result = [];
+      for(let i = 0; i < tags.length; ++i)
+      {
+         result.push({
+            tag: tags[i].tag,
+            count: tags[i].count,
+            updatedDate: tags[i].updated_date
+         });
+      }
+
+      res.status(StatusCode.OK).json(result);
    }
 
    private async checkCreatePostForm(req: Request, res: Response, next: NextFunction): Promise<any>
