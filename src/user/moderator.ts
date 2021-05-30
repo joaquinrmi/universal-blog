@@ -14,10 +14,19 @@ class Moderator extends Author
    {
       try
       {
+         await model.beginTransaction();
+         const post = await model.post.searchById(postId);
+         for(let i = 0; i < post.tags.length; ++i)
+         {
+            const tagDoc = await model.tag.search(post.tags[i]);
+            await tagDoc.removePost();
+         }
          await model.post.deletePostById(model.like, model.comment, postId);
+         await model.endTransaction();
       }
       catch(err)
       {
+         await model.rollbackTransaction();
          return Promise.reject(err);
       }
    }
