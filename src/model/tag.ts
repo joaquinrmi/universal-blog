@@ -97,6 +97,8 @@ tagSkeleton.methods.addPost = async function(this: TagDocument): Promise<void>
    {
       return Promise.reject(err);
    }
+
+   this.count += 1;
 }
 
 tagSkeleton.methods.removePost = async function(this: TagDocument): Promise<void>
@@ -111,6 +113,8 @@ tagSkeleton.methods.removePost = async function(this: TagDocument): Promise<void
    {
       return Promise.reject(err);
    }
+
+   this.count -= 1;
 }
 
 tagSkeleton.methods.delete = async function(this: TagDocument): Promise<void>
