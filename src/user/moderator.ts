@@ -20,6 +20,10 @@ class Moderator extends Author
          {
             const tagDoc = await model.tag.search(post.tags[i]);
             await tagDoc.removePost();
+            if(tagDoc.count == 0)
+            {
+               await tagDoc.delete();
+            }
          }
          await model.post.deletePostById(model.like, model.comment, postId);
          await model.endTransaction();
