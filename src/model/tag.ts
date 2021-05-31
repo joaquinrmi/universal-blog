@@ -16,6 +16,7 @@ export interface TagDocument extends Tag
 
    addPost(): Promise<void>;
    removePost(): Promise<void>;
+   delete(): Promise<void>;
 }
 
 const tagSkeleton = new Skeleton<TagDocument>();
@@ -105,6 +106,18 @@ tagSkeleton.methods.removePost = async function(this: TagDocument): Promise<void
    try
    {
       await this.pool.query(`UPDATE tags SET count = count - 1 WHERE id = $1;`, [ this.id ]);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+}
+
+tagSkeleton.methods.delete = async function(this: TagDocument): Promise<void>
+{
+   try
+   {
+      await this.pool.query(`DELETE FROM tags WHERE id = $1;`, [ this.id ]);
    }
    catch(err)
    {
