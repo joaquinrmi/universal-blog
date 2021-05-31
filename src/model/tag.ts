@@ -22,7 +22,7 @@ const tagSkeleton = new Skeleton<TagDocument>();
 
 class TagModel extends BasicModel<TagDocument>
 {
-   props: [ "id", "tag", "count", "updated_date" ];
+   props = [ "id", "tag", "count", "updated_date" ];
 
    constructor(pool: Pool)
    {
