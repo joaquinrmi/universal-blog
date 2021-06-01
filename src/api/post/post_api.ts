@@ -129,7 +129,7 @@ class PostAPI extends Router
          switch(err)
          {
          case UserErrorCode.PostNotFound:
-            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.PostDoesNotExist));
 
          case UserErrorCode.InsufficientPermissions:
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
