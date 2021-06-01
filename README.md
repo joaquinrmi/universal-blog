@@ -11,6 +11,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
     + [Moderador](https://github.com/joaquinrmi/universal-blog#moderador-moderator)
     + [Administrador](https://github.com/joaquinrmi/universal-blog#administrador-admin)
 * [API](https://github.com/joaquinrmi/universal-blog#api)
+    + [Errores comunes](https://github.com/joaquinrmi/errorescomunes)
     + [Account API](https://github.com/joaquinrmi/universal-blog#account-api)
         * [`/account/create`](https://github.com/joaquinrmi/universal-blog#accountcreate)
         * [`/account/delete`](https://github.com/joaquinrmi/universal-blog#accountdelete)
@@ -25,6 +26,8 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
         * [`/post/like`](https://github.com/joaquinrmi/universal-blog#postlike)
         * [`/post/get-single`](https://github.com/joaquinrmi/universal-blog#postget-single)
         * [`/post/get-list`](https://github.com/joaquinrmi/universal-blog#postget-list)
+        * [`/post/get-comment`](https://github.com/joaquinrmi/universal-blog#postget-comment)
+        * [`/post/tag-list`](https://github.com/joaquinrmi/universal-blog#posttag-list)
     + [User API](https://github.com/joaquinrmi/universal-blog#user-api)
         * [`/user/promote`](https://github.com/joaquinrmi/universal-blog#userpromote)
         * [`/user/banish`](https://github.com/joaquinrmi/universal-blog#userbanish)
@@ -75,6 +78,45 @@ Son capaces de realizar todas las acciones disponibles en la aplicación, lo cua
 La API se divide en cuatro partes: `account`, que administra los servicios relacionados con las cuentas de usuario; `post`, que administra las acciones con publicaciones; `user`, que administra a los usuarios y `upload` que permite cargar imágenes.
 
 La ruta de todos los servicios comienza siempre con `/api`.
+
+### Errores comunes
+
+Los siguientes son errores comunes a la mayoría de las rutas, que pueden suceder al hacer una petición al servidor.
+
+**Error `internal_error`**:
+* Descripción: ocurrió un error inesperado en el servidor y no ha sido posible procesar la solicitud.
+* Código: 500 (Internal Server Error).
+* Cuerpo: `undefined`.
+
+**Error `session_does_not_exist`**:
+* Descripción: este error ocurre cuando se intenta acceder a un recurso que está disponible solo para usuarios con sesión iniciada.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "session_does_not_exist"
+}
+```
+
+**Error `invalid_query`**:
+* Descripción: la *query* especificada está incompleta o tiene algún tipo de dato inválido.
+* Código: 400 (Bad Request).
+* Cuerpo:
+```json
+{
+   "what": "invalid_query"
+}
+```
+
+**Error `invalid_form`**:
+* Descripción: el formulario enviado está incompleto o tiene algún tipo de dato inválido.
+* Código: 400 (Bad Request).
+* Cuerpo:
+```json
+{
+   "what": "invalid_form"
+}
+```
 
 ### Account API
 
@@ -139,7 +181,7 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 
 #### `/account/delete`
 
-**Descripción**: Elimina la cuenta del usuario con la sesión actual.
+**Descripción**: elimina la cuenta del usuario con la sesión actual.
 
 **Método**: `DELETE`.
 
@@ -150,14 +192,13 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 }
 ```
 
-**Respuesta**:
-```json
-{}
-```
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
 
 #### `/account/login`
 
-**Descripción**: Inicia sesión con una cuenta existente.
+**Descripción**: inicia sesión con una cuenta existente.
 
 **Método**: `POST`.
 
@@ -169,37 +210,69 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 }
 ``` 
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 201 (Created).
+* Cuerpo:
 ```json
 {
    "alias": "string"
+}
+```
+
+**Error `incorrect_user_or_password`**:
+* Descripción: la combinación usuario-contraseña es incorrecta.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "incorrect_user_or_password"
+}
+```
+
+**Error `banned`**:
+* Descripción: el usuario se encuentra bloqueado en el servidor.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "banned",
+   "date": "number",
+   "reason": "string"
 }
 ```
 
 #### `/account/logout`
 
-**Descripción**: Termina la sesión actual, si existe.
+**Descripción**: termina la sesión actual, si existe.
 
 **Método**: `POST`.
 
 **Formulario**: `undefined`.
 
-**Respuesta**: `undefined`.
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
 
 #### `/account/restore-session`
 
-**Descripción**: Inicia sesión utilizando la cookie de sesión, la cual se crea luego de iniciar sesión en `/account/login`.
+**Descripción**: inicia sesión utilizando la cookie de sesión, la cual se crea luego de iniciar sesión en `/account/login`.
 
 **Método**: `POST`.
 
 **Formulario**: ninguno.
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo:
 ```json
 {
    "alias": "string"
 }
 ```
+
+**Error `session_does_not_exist`**: ver (Errores comunes)[https://github.com/joaquinrmi/errorescomunes]
+
+**Error `banned`**: ver (Errores comunes)[https://github.com/joaquinrmi/errorescomunes]
 
 ### Post API
 
@@ -207,7 +280,7 @@ Las rutas de los servicios de publicación comienzan siempre con `/post`.
 
 #### `/post/create`
 
-**Descripción**: Crea una nueva publicación para el usuario con la sesión actual.
+**Descripción**: crea una nueva publicación para el usuario con la sesión actual.
 
 **Método**: `POST`.
 
@@ -224,16 +297,38 @@ Las rutas de los servicios de publicación comienzan siempre con `/post`.
 ```
 El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo, mientras que `galleryPosition` debe ser un arreglo numérico del mismo tamaño que `gallery` y que especificará la posición de las imágenes con respecto de los párrafos. Por ejemplo, el índice `0` especifica que la imagen debe colocarse justo antes del comienzo del primer párrafo.
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 201 (Created).
+* Cuerpo:
 ```json
 {
    "postId": "string"
 }
 ```
 
+**Error `insufficient_permissions`**:
+* Descripción: el usuario no posee los permisos suficientes para crear una publicación.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
+```
+
+**Error `TitleAlreadyUsed`**:
+* Descripción: el usuario ya posee una publicación registrada con el mismo nombre.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "the_title_is_already_used"
+}
+```
+
 #### `/post/delete`
 
-**Descripción**: Elimina una publicación si el usuario con la sesión actual es el propietario de la misma.
+**Descripción**: elimina una publicación si el usuario con la sesión actual es el propietario de la misma o tiene permisos para hacerlo.
 
 **Método**: `POST`.
 
@@ -244,14 +339,33 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 }
 ```
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
+
+**Error `post_does_not_exist`**:
+* Descripción: la publicación no existe.
+* Código: 409 (Conflict).
+* Cuerpo:
 ```json
-{}
+{
+   "what": "post_does_not_exist"
+}
+```
+
+**Error `insufficient_permissions`**:
+* Descripción: el usuario no es el dueño de la publicación o no tiene los permisos suficientes para eliminarla.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
 ```
 
 #### `/post/comment`
 
-**Descripción**: Registra un nuevo comentario del usuario con la sesión actual.
+**Descripción**: registra un nuevo comentario del usuario con la sesión actual.
 
 **Método**: `POST`.
 
@@ -263,14 +377,38 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 }
 ```
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 201 (Created).
+* Cuerpo:
 ```json
-{}
+{
+   "commentId": "number"
+}
+```
+
+**Error `post_does_not_exist`**:
+* Descripción: la publicación no existe.
+* Código: 409 (Conflict).
+* Cuerpo:
+```json
+{
+   "what": "post_does_not_exist"
+}
+```
+
+**Error `insufficient_permissions`**:
+* Descripción: el usuario no posee los permisos para dejar un comentario.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
 ```
 
 #### `/post/delete-comment`
 
-**Descripción**: Elimina un comentario según su `id`.
+**Descripción**: elimina un comentario según su identificador.
 
 **Método**: `POST`.
 
@@ -281,14 +419,33 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 }
 ```
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo: `undefined`.
+
+**Error `comment_does_not_exist`**:
+* Descripción: el comentario no existe.
+* Código: 409 (Conflict).
+* Cuerpo:
 ```json
-{}
+{
+   "what": "comment_does_not_exist"
+}
+```
+
+**Error `insufficient_permissions`**:
+* Descripción: el usuario no posee los permisos suficientes para eliminar el comentario.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
 ```
 
 #### `/post/like`
 
-**Descripción**: Registra una nuevo "me gusta" en un artículo para el usuario con la sesión actual.
+**Descripción**: registra una nuevo "me gusta" en un artículo para el usuario con la sesión actual.
 
 **Método**: `POST`.
 
@@ -299,14 +456,33 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 }
 ```
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 201 (Created).
+* Cuerpo: `undefined`.
+
+**Error `post_does_not_exist`**:
+* Descripción: la publicación no existe.
+* Código: 409 (Conflict).
+* Cuerpo:
 ```json
-{}
+{
+   "what": "post_does_not_exist"
+}
+```
+
+**Error `insufficient_permissions`**:
+* Descripción: el usuario no posee los permisos suficientes para dejar un *like*.
+* Código: 401 (Unauthorized).
+* Cuerpo:
+```json
+{
+   "what": "insufficient_permissions"
+}
 ```
 
 #### `/post/get-single`
 
-**Descripción**: Devuelve la información de una publicación, buscándola por su `id`.
+**Descripción**: devuelve la información de una publicación, buscándola por su `id`.
 
 **Método**: `GET`.
 
@@ -317,7 +493,9 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 }
 ```
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo:
 ```json
 {
    "title": "string",
@@ -333,9 +511,19 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 }
 ```
 
+**Error `post_does_not_exist`**:
+* Descripción: la publicación no existe.
+* Código: 404 (Not Found).
+* Cuerpo:
+```json
+{
+   "what": "post_does_not_exist"
+}
+```
+
 #### `/post/get-list`
 
-**Descripción**: Busca una cierta cantidad de publicaciones mediante varios parámetros.
+**Descripción**: busca una cierta cantidad de publicaciones mediante varios parámetros.
 
 **Método**: `GET`.
 
@@ -352,7 +540,9 @@ El campo `gallery` es un arreglo con los enlaces de las imágenes del artículo,
 ```
 Los parámetros `offset` y `count` son obligatorios, mientras que los demás son opcionales. Los valores por defecto de `orderType` y `order` son, respectivamente, `"date_created"` y `"asc"`.
 
-**Respuesta**:
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo:
 ```json
 [
    {
@@ -370,6 +560,63 @@ Los parámetros `offset` y `count` son obligatorios, mientras que los demás son
 ]
 ```
 
+#### `post/get-comment`
+
+**Descripción**: consulta un comentario por su identificador.
+
+**Método**: `GET`.
+
+**Query**:
+```json
+{
+   "id": "number"
+}
+```
+
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo:
+```json
+{
+   "id": "number",
+   "authorId": "number",
+   "postId": "string",
+   "content": [ "string" ],
+   "dateCreated": "number"
+}
+```
+
+**Error `comment_does_not_exist`**:
+* Descripción: el comentario no existe.
+* Código: 404 (Not Found).
+* Cuerpo:
+```json
+{
+   "what": "comment_does_not_exist"
+}
+```
+
+#### `post/tag-list`
+
+**Descripción**: consulta todas las etiquetas (*tags*).
+
+**Método**: `GET`.
+
+**Query**: `undefined`.
+
+**Respuesta exitosa**:
+* Código: 200 (OK).
+* Cuerpo:
+```json
+[
+   {
+      "tag": "string",
+      "count": "number",
+      "updateDate": "number"
+   }
+]
+```
+
 ### User API
 
 Las rutas de los servicios de usuario siempre comienzan con `/user`.
@@ -380,7 +627,7 @@ Las rutas de los servicios de usuario siempre comienzan con `/user`.
 
 **Método**: `POST`.
 
-**Form**:
+**Formulario**:
 ```json
 {
    "aliasOrEmail": "string",
