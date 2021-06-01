@@ -11,7 +11,7 @@ Servidor "universal" para blogs desarrollado con **Node.js** y **PostgreSQL**.
     + [Moderador](https://github.com/joaquinrmi/universal-blog#moderador-moderator)
     + [Administrador](https://github.com/joaquinrmi/universal-blog#administrador-admin)
 * [API](https://github.com/joaquinrmi/universal-blog#api)
-    + [Errores comunes](https://github.com/joaquinrmi/errorescomunes)
+    + [Errores comunes](https://github.com/joaquinrmi/universal-blog#errorescomunes)
     + [Account API](https://github.com/joaquinrmi/universal-blog#account-api)
         * [`/account/create`](https://github.com/joaquinrmi/universal-blog#accountcreate)
         * [`/account/delete`](https://github.com/joaquinrmi/universal-blog#accountdelete)
@@ -270,9 +270,9 @@ El campo `password` debe ser una cadena de entre y `8` y `32` caracteres, inclus
 }
 ```
 
-**Error `session_does_not_exist`**: ver (Errores comunes)[https://github.com/joaquinrmi/errorescomunes]
+**Error `session_does_not_exist`**: ver (Errores comunes)[https://github.com/joaquinrmi/universal-blog#errorescomunes]
 
-**Error `banned`**: ver (Errores comunes)[https://github.com/joaquinrmi/errorescomunes]
+**Error `banned`**: ver (Errores comunes)[https://github.com/joaquinrmi/universal-blog#errorescomunes]
 
 ### Post API
 
