@@ -388,7 +388,7 @@ class PostAPI extends Router
          result.push({
             tag: tags[i].tag,
             count: tags[i].count,
-            updatedDate: tags[i].updated_date
+            updatedDate: tags[i].updated_date.getTime()
          });
       }
 
