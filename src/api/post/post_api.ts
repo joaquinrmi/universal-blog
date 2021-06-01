@@ -156,7 +156,7 @@ class PostAPI extends Router
          switch(err)
          {
          case UserErrorCode.CommentNotFound:
-            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.CommentDoesNotExist));
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.CommentDoesNotExist));
 
          case UserErrorCode.InsufficientPermissions:
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
@@ -186,7 +186,7 @@ class PostAPI extends Router
          switch(err)
          {
          case UserErrorCode.PostNotFound:
-            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.PostDoesNotExist));
 
          case UserErrorCode.InsufficientPermissions:
             return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
@@ -233,7 +233,7 @@ class PostAPI extends Router
          authorAlias: author.alias,
          commentCount: post.comment_count,
          likeCount: post.like_count,
-         dateCreated: post.date_created
+         dateCreated: post.date_created.getTime()
       });
    }
 
@@ -294,7 +294,7 @@ class PostAPI extends Router
 
          if(!user)
          {
-            return res.status(StatusCode.NotFound).json(new ErrorResponse(ErrorType.UserDoesNotExist));
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.UserDoesNotExist));
          }
 
          searchQuery.author = user.id;
