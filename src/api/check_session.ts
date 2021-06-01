@@ -29,7 +29,7 @@ async function checkSession(req: Request, res: Response, next: NextFunction): Pr
 
          return res.status(StatusCode.Unauthorized).json({
             what: "banned",
-            date: banishment.date,
+            date: banishment.date.getTime(),
             reason: banishment.reason
          });
       }
