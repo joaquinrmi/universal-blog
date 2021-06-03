@@ -54,6 +54,18 @@ class BasicUser
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }
 
+   protected async editPostStandar(post: PostDocument, postData: Post): Promise<void>
+   {
+      try
+      {
+         await post.edit(postData);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
+   }
+
    async deletePost(model: Model, postId: string): Promise<void>
    {
       try
