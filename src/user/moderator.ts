@@ -2,12 +2,25 @@ import Author from "./author";
 import { UserDocument } from "../model/user";
 import Model from "../model";
 import ErrorCode from "./error_code";
+import { PostDocument, Post } from "../model/post";
 
 class Moderator extends Author
 {
    constructor(document: UserDocument)
    {
       super(document);
+   }
+
+   async editOnePost(model: Model, post: PostDocument, postData: Post): Promise<void>
+   {
+      try
+      {
+         await this.editPostStandar(post, postData);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
    }
 
    async deleteOnePost(model: Model, postId: string): Promise<void>
