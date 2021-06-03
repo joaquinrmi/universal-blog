@@ -22,6 +22,38 @@ class BasicUser
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }
 
+   async editPost(model: Model, postId: string, postData: Post): Promise<void>
+   {
+      try
+      {
+         var post = await model.post.searchById(postId);
+         if(post == null)
+         {
+            return Promise.reject(ErrorCode.PostNotFound);
+         }
+
+         if(post.author_id == this.document.id)
+         {
+            await this.editOwnPost(model, postId, postData);
+         }
+         else await this.editOnePost(model, postId, postData);
+      }
+      catch(err)
+      {
+         return Promise.reject(err)
+      }
+   }
+
+   protected async editOwnPost(model: Model, postId: string, postData: Post): Promise<void>
+   {
+      return Promise.reject(ErrorCode.InsufficientPermissions);
+   }
+
+   protected async editOnePost(model: Model, postId: string, postData: Post): Promise<void>
+   {
+      return Promise.reject(ErrorCode.InsufficientPermissions);
+   }
+
    async deletePost(model: Model, postId: string): Promise<void>
    {
       try
