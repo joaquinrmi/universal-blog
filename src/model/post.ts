@@ -69,13 +69,21 @@ class PostModel extends BasicModel<PostDocument>
          {
             return Promise.reject(PostErrorCode.TitleAlreadyUsed);
          }
+
+         var id = encryptSHA256(`${user.alias}-${post.title}`);
+
+         let count = 0;
+         while(await this.searchById(id) != null)
+         {
+            id = encryptSHA256(`${user.alias}-${post.title}-${count}`);
+            ++count;
+         }
       }
       catch(err)
       {
          return Promise.reject(err);
       }
 
-      const id = encryptSHA256(`${user.alias}-${post.title}`);
       try
       {
          await this.pool.query("INSERT INTO posts (id, author_id, title, content, cover, gallery, gallery_position, tags, comment_count, like_count, date_created) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);", [ id, user.id, post.title, post.content, post.cover, post.gallery, post.gallery_position, post.tags, 0, 0, post.date_created ]);
