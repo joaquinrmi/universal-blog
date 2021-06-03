@@ -11,6 +11,7 @@ import DeleteCommentForm from "../../api/post/delete_comment_form";
 import BanishmentForm from "../../api/user/banishment_form";
 import RemoveBanishmentForm from "../../api/user/remove_banishment_form";
 import BasicUser from "../../user/user";
+import EditPostForm from "../../api/post/edit_post_form";
 
 declare global
 {
@@ -23,6 +24,7 @@ declare global
       signupForm: SignupForm;
       loginForm: LoginForm;
       postForm: PostForm;
+      editPostForm: EditPostForm;
       commentForm: CommentForm;
       likeForm: LikeForm;
       deleteForm: DeleteForm;
