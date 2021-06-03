@@ -1,7 +1,7 @@
 import Reader from "./reader";
 import { UserDocument } from "../model/user";
 import Model from "../model";
-import { Post } from "../model/post";
+import { Post, PostDocument } from "../model/post";
 import ErrorCode from "./error_code";
 
 class Author extends Reader
@@ -31,6 +31,18 @@ class Author extends Reader
       }
       
       return postId;
+   }
+
+   async editOwnPost(model: Model, post: PostDocument, postData: Post): Promise<void>
+   {
+      try
+      {
+         await this.editPostStandar(post, postData);
+      }
+      catch(err)
+      {
+         return Promise.reject(err);
+      }
    }
 
    async deleteOwnPost(model: Model, postId: string): Promise<void>
