@@ -35,6 +35,8 @@ export interface PostDocument extends PostSchema
 {
    pool: Pool;
 
+   edit(data: Post): Promise<void>;
+
    addComment(client?: PoolClient): Promise<void>;
    addLike(client?: PoolClient): Promise<void>;
    removeLike(client?: PoolClient): Promise<void>;
@@ -269,6 +271,33 @@ class PostModel extends BasicModel<PostDocument>
          client.release();
       }
    }
+}
+
+postSkeleton.methods.edit = async function(this: PostDocument, data: Post): Promise<void>
+{
+   if(!this.id)
+   {
+      return Promise.reject("field 'id' is undefined");
+   }
+
+   const query = `UPDATE posts SET title = $2, content = $2, cover = $3, gallery = $4, gallery_position = $5, tags = $6 WHERE id = $1;`;
+   const queryVals = [ this.id, data.title, data.content, data.cover, data.gallery, data.gallery_position, data.tags ];
+
+   try
+   {
+      await this.pool.query(query, queryVals);
+   }
+   catch(err)
+   {
+      return Promise.reject(err);
+   }
+
+   this.title = data.title;
+   this.content = data.content;
+   this.cover = data.cover;
+   this.gallery = data.gallery;
+   this.gallery_position = data.gallery_position;
+   this.tags = data.tags;
 }
 
 postSkeleton.methods.addComment = async function(this: PostDocument, client?: PoolClient): Promise<void>
