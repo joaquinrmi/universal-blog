@@ -18,6 +18,7 @@ class PostAPI extends Router
    {
       super([
          new RouteMap(MethodType.Post, "/create", "createPost"),
+         new RouteMap(MethodType.Put, "/edit", "editPost"),
          new RouteMap(MethodType.Post, "/delete", "deletePost"),
          new RouteMap(MethodType.Post, "/comment", "createComment"),
          new RouteMap(MethodType.Post, "/delete-comment", "deleteComment"),
@@ -29,6 +30,7 @@ class PostAPI extends Router
       ]);
 
       this.registerFunction("createPost", this.createPost);
+      this.registerFunction("editPost", this.editPost);
       this.registerFunction("deletePost", this.deletePost);
       this.registerFunction("createComment", this.createComment);
       this.registerFunction("deleteComment", this.deleteComment);
@@ -39,8 +41,9 @@ class PostAPI extends Router
       this.registerFunction("getTags", this.getTags);
 
       this.useMiddleware(useModel);
-      this.useMiddleware(checkSession, [ "/create", "/delete", "/comment", "/delete-comment", "/like" ]);
-      this.useMiddleware(this.checkCreatePostForm, [ "/create" ]);
+      this.useMiddleware(checkSession, [ "/create", "/edit", "/delete", "/comment", "/delete-comment", "/like" ]);
+      this.useMiddleware(this.checkCreatePostForm, [ "/create", "/edit" ]);
+      this.useMiddleware(this.checkEditPostForm, [ "/edit" ]);
       this.useMiddleware(this.checkDeletePostForm, [ "/delete" ]);
       this.useMiddleware(this.checkCommentForm, [ "/comment" ]);
       this.useMiddleware(this.checkDeleteCommentForm, [ "/delete-comment" ]);
@@ -84,6 +87,43 @@ class PostAPI extends Router
       res.status(StatusCode.Created).json({
          postId
       });
+   }
+
+   private async editPost(req: Request, res: Response): Promise<any>
+   {
+      const postData: Post = {
+         title: req.editPostForm.title,
+         content: req.editPostForm.content,
+         cover: req.editPostForm.cover,
+         gallery: req.editPostForm.gallery,
+         gallery_position: req.editPostForm.galleryPosition,
+         tags: req.editPostForm.tags,
+         comment_count: 0,
+         like_count: 0,
+         date_created: new Date()
+      };
+
+      try
+      {
+         await req.user.editPost(req.model, req.editPostForm.postId, postData);
+      }
+      catch(err)
+      {
+         switch(err)
+         {
+         case UserErrorCode.InsufficientPermissions:
+            return res.status(StatusCode.Unauthorized).json(new ErrorResponse(ErrorType.InsufficientPermissions));
+
+         case UserErrorCode.PostNotFound:
+            return res.status(StatusCode.Conflict).json(new ErrorResponse(ErrorType.PostDoesNotExist));
+
+         default:
+            console.error(err);
+            return res.status(StatusCode.InternalServerError).json();
+         }
+      }
+
+      res.status(StatusCode.OK).json();
    }
 
    private async deletePost(req: Request, res: Response): Promise<any>
@@ -439,6 +479,20 @@ class PostAPI extends Router
       if(!req.postForm.gallery) req.postForm.gallery = [];
       if(!req.postForm.galleryPosition) req.postForm.galleryPosition = [];
       if(!req.postForm.tags) req.postForm.tags = [];
+
+      next();
+   }
+
+   private async checkEditPostForm(req: Request, res: Response, next: NextFunction): Promise<any>
+   {
+      const exit = (err: string) => res.status(StatusCode.BadRequest).json(new ErrorResponse(err));
+
+      if(typeof req.body.postId != "string") return exit(ErrorType.InvalidForm);
+
+      req.editPostForm = {
+         postId: req.body.postId,
+         ...req.postForm
+      };
 
       next();
    }
