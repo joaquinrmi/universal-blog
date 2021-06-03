@@ -1,7 +1,7 @@
 import Model from "../model";
 import { UserDocument } from "../model/user";
 import ErrorCode from "./error_code";
-import { Post } from "../model/post";
+import { Post, PostDocument } from "../model/post";
 import { Comment } from "../model/comment";
 import { Like } from "../model/like";
 
@@ -26,7 +26,7 @@ class BasicUser
    {
       try
       {
-         var post = await model.post.searchById(postId);
+         const post = await model.post.searchById(postId);
          if(post == null)
          {
             return Promise.reject(ErrorCode.PostNotFound);
@@ -34,9 +34,9 @@ class BasicUser
 
          if(post.author_id == this.document.id)
          {
-            await this.editOwnPost(model, postId, postData);
+            await this.editOwnPost(model, post, postData);
          }
-         else await this.editOnePost(model, postId, postData);
+         else await this.editOnePost(model, post, postData);
       }
       catch(err)
       {
@@ -44,12 +44,12 @@ class BasicUser
       }
    }
 
-   protected async editOwnPost(model: Model, postId: string, postData: Post): Promise<void>
+   protected async editOwnPost(model: Model, post: PostDocument, postData: Post): Promise<void>
    {
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }
 
-   protected async editOnePost(model: Model, postId: string, postData: Post): Promise<void>
+   protected async editOnePost(model: Model, post: PostDocument, postData: Post): Promise<void>
    {
       return Promise.reject(ErrorCode.InsufficientPermissions);
    }
