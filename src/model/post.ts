@@ -288,7 +288,7 @@ postSkeleton.methods.edit = async function(this: PostDocument, data: Post): Prom
       return Promise.reject("field 'id' is undefined");
    }
 
-   const query = `UPDATE posts SET title = $2, content = $2, cover = $3, gallery = $4, gallery_position = $5, tags = $6 WHERE id = $1;`;
+   const query = `UPDATE posts SET title = $2, content = $3, cover = $4, gallery = $5, gallery_position = $6, tags = $7 WHERE id = $1;`;
    const queryVals = [ this.id, data.title, data.content, data.cover, data.gallery, data.gallery_position, data.tags ];
 
    try
